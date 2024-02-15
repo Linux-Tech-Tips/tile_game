@@ -1,0 +1,3 @@
+[submodule "src/terminal_gui"]
+	path = src/terminal_gui
+	url = https://github.com/Linux-Tech-Tips/terminal_gui
