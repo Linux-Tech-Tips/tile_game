@@ -54,4 +54,4 @@ dkms.conf
 # Other
 .vscode
 *.code-workspace
-.sg_hs
+.dependencies/
