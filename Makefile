@@ -38,8 +38,8 @@ DEPS_DIR := .dependencies
 DOCS_DIR := doxygen_doc
 
 # Additional compiler/linker flags
-CFLAGS := 
-LDFLAGS := 
+CFLAGS := -Wall -std=gnu99 -pedantic
+LDFLAGS := -lc
 
 # Documentation
 DOCS_SW := doxygen
