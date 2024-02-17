@@ -11,6 +11,7 @@
 
 #include "data.h"
 #include "task_title.h"
+#include "task_game.h"
 
 /** The global static variable used to transfer data from a signal handler to the program. 
  * Initialized to a NULL pointer, optimally to be set to the address of a variable used in the program.
@@ -49,7 +50,7 @@ int main() {
             break;
 
             case TASK_GAME:
-            /* TODO STUB Implement */
+                nextTask = game_task(&data);
             break;
 
             /* Graceful exit program procedure */
