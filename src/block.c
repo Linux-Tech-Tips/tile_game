@@ -81,12 +81,10 @@ void block_render(block_t block, int originX, int originY) {
         cursorMoveTo(originX, originY);
         
         /* Moving cursor to the coordinates of the current tile */
-        if(block.tiles[i][0] > 0)
-            cursorMoveBy(RIGHT, block.tiles[i][0] * 2); /* Multiplying the coordinate movement by 2, as each block has a width of 2 */
-        if(block.tiles[i][1] > 0)
-            cursorMoveBy(DOWN, block.tiles[i][1]);
+        cursorMoveBy(RIGHT, block.tiles[i][0] * 2); /* Multiplying the coordinate movement by 2, as each block has a width of 2 */
+        cursorMoveBy(DOWN, block.tiles[i][1]);
         /* As the block type corresponds 1-1 with the background color specification, specifying the type as the color draws the correct color of the block */
-        modeSet(NO_CODE, FG_BLACK, block.type);
+        modeSet(NO_CODE, COLOR_BLACK, block.type);
         puts("[]");
     }
 }

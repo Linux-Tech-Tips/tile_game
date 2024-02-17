@@ -14,19 +14,19 @@
 /** Enumeration defining the type of block */
 typedef enum {
     /** T Block - classic 3x2 inverse T shape */
-    BLOCK_T = BG_CYAN,
+    BLOCK_T = COLOR_CYAN,
     /** Cube Block - 2x2 cube shape */
-    BLOCK_CUBE = BG_MAGENTA,
+    BLOCK_CUBE = COLOR_MAGENTA,
     /** Line Block - 1x4 line shape */
-    BLOCK_LINE = BG_WHITE,
+    BLOCK_LINE = COLOR_WHITE,
     /** L Block - 2x3 L shape */
-    BLOCK_L = BG_GREEN,
+    BLOCK_L = COLOR_GREEN,
     /** L_R Block - 2x3 mirrored L shape */
-    BLOCK_L_R = BG_YELLOW,
+    BLOCK_L_R = COLOR_YELLOW,
     /** Z Block - 2x4 Z shape */
-    BLOCK_Z = BG_BLUE,
+    BLOCK_Z = COLOR_BLUE,
     /** Z_R Block - 2x4 mirrored Z shape */
-    BLOCK_Z_R = BG_RED
+    BLOCK_Z_R = COLOR_RED
 } blockType_t;
 
 /** The data structure containing information about a given block 

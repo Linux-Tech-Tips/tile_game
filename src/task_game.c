@@ -88,7 +88,7 @@ void game_render(programData_t data, gameData_t gameData) {
     cursorMoveBy(RIGHT, gameData.fieldOriginX);
     if(gameData.fieldOriginY > 0)
         cursorMoveBy(DOWN, gameData.fieldOriginY);
-    modeSet(NO_CODE, FG_WHITE, BG_BLACK);
+    modeSet(NO_CODE, COLOR_WHITE, COLOR_BLACK);
     puts("||||||||||||||||||||||");
     for(short i = 0; i < 20; i++) {
         cursorMoveBy(RIGHT, gameData.fieldOriginX);
