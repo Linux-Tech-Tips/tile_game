@@ -23,23 +23,55 @@ void block_rotate(block_t * block) {
 }
 
 void block_gen(block_t * block, blockType_t type, int startX, int startY) {
-    /* TODO STUB TO IMPLEMENT */
-    /* For now, the T block is generated */
-    block->type = BLOCK_T;
-    /* ORIGIN TILE */
-    block->tiles[0][0] = 0;
-    block->tiles[0][1] = 0;
-    /* TILE 2 */
-    block->tiles[1][0] = -1;
-    block->tiles[1][1] = 0;
-    /* TILE 3 */
-    block->tiles[2][0] = 1;
-    block->tiles[2][1] = 0;
-    /* TILE 4 */
-    block->tiles[3][0] = 0;
-    block->tiles[3][1] = 1;
+    /* Setting the correct type */
+    block->type = type;
+
+    switch(type) {
+        case BLOCK_T:
+            _block_genTiles(block, 0, 0, -1, 0, 1, 0, 0, 1);
+            break;
+        
+        case BLOCK_CUBE:
+            _block_genTiles(block, 0, 0, 1, 0, 0, 1, 1, 1);
+            break;
+
+        case BLOCK_LINE:
+            _block_genTiles(block, 0, 0, -1, 0, 1, 0, 2, 0);
+            break;
+
+        case BLOCK_L:
+            _block_genTiles(block, 0, 0, -1, 0, 1, 0, 1, 1);
+            break;
+
+        case BLOCK_L_R:
+            _block_genTiles(block, 0, 0, 1, 0, -1, 0, -1, 1);
+            break;
+
+        case BLOCK_Z:
+            _block_genTiles(block, 0, 0, 1, 0, 0, 1, -1, 1);
+            break;
+
+        case BLOCK_Z_R:
+            _block_genTiles(block, 0, 0, -1, 0, 0, 1, 1, 1);
+            break;
+    }
 
     block_move(startX, startY, block);
+}
+
+void _block_genTiles(block_t * block, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4) {
+    /* ORIGIN TILE */
+    block->tiles[0][0] = x1;
+    block->tiles[0][1] = y1;
+    /* TILE 2 */
+    block->tiles[1][0] = x2;
+    block->tiles[1][1] = y2;
+    /* TILE 3 */
+    block->tiles[2][0] = x3;
+    block->tiles[2][1] = y3;
+    /* TILE 4 */
+    block->tiles[3][0] = x4;
+    block->tiles[3][1] = y4;
 }
 
 void block_render(block_t block, int originX, int originY) {

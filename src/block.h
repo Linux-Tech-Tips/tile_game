@@ -52,6 +52,9 @@ void block_rotate(block_t * block);
 /** Populates the given block_t data structure with data of the given block type */
 void block_gen(block_t * block, blockType_t type, int startX, int startY);
 
+/** Internal function, assigns the given coordinates to the correct fields in the block structure */
+void _block_genTiles(block_t * block, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4);
+
 /** Draws the desired block to the terminal, with a specifiable custom (top-left) origin point */
 void block_render(block_t block, int originX, int originY);
 

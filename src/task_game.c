@@ -51,6 +51,22 @@ void game_update(programData_t * data, gameData_t * gameData) {
             else if(buffer[2] == (char)(68))
                 block_move(-1, 0, &gameData->block);
         }
+
+        if(strchr(buffer, '1'))
+            block_gen(&gameData->block, BLOCK_T, 5, 5);
+        if(strchr(buffer, '2'))
+            block_gen(&gameData->block, BLOCK_CUBE, 5, 5);
+        if(strchr(buffer, '3'))
+            block_gen(&gameData->block, BLOCK_LINE, 5, 5);
+        if(strchr(buffer, '4'))
+            block_gen(&gameData->block, BLOCK_L, 5, 5);
+        if(strchr(buffer, '5'))
+            block_gen(&gameData->block, BLOCK_L_R, 5, 5);
+        if(strchr(buffer, '6'))
+            block_gen(&gameData->block, BLOCK_Z, 5, 5);
+        if(strchr(buffer, '7'))
+            block_gen(&gameData->block, BLOCK_Z_R, 5, 5);
+        
     }
 
 }
