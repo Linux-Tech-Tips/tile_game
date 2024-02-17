@@ -73,7 +73,7 @@ void game_render(programData_t data, gameData_t gameData) {
     if(gameData.fieldOriginY > 0)
         cursorMoveBy(DOWN, gameData.fieldOriginY);
     modeSet(NO_CODE, FG_WHITE, BG_BLACK);
-    puts("|====================|");
+    puts("||||||||||||||||||||||");
     for(short i = 0; i < 20; i++) {
         cursorMoveBy(RIGHT, gameData.fieldOriginX);
         putchar('|');
@@ -84,7 +84,7 @@ void game_render(programData_t data, gameData_t gameData) {
         putchar('\n');
     }
     cursorMoveBy(RIGHT, gameData.fieldOriginX);
-    puts("|====================|");
+    puts("||||||||||||||||||||||");
 
     /* Drawing the block */
     block_render(gameData.block, gameData.fieldOriginX, gameData.fieldOriginY);

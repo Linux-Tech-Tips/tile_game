@@ -54,7 +54,7 @@ void block_render(block_t block, int originX, int originY) {
         if(block.tiles[i][1] > 0)
             cursorMoveBy(DOWN, block.tiles[i][1]);
         /* As the block type corresponds 1-1 with the background color specification, specifying the type as the color draws the correct color of the block */
-        modeSet(NO_CODE, NO_CODE, block.type);
-        puts("  ");
+        modeSet(NO_CODE, FG_BLACK, block.type);
+        puts("[]");
     }
 }
