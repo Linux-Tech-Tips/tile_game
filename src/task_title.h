@@ -1,5 +1,5 @@
 /** 
- * @file title.h
+ * @file task_title.h
  * @author Martin (Linux-Tech-Tips)
  * @brief Header file declaring data structures and functions related to the main/title screen task (data.h/TASK_MAIN)
 */
