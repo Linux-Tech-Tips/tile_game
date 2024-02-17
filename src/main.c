@@ -10,7 +10,7 @@
 #include "terminal_gui/terminal_f.h"
 
 #include "data.h"
-#include "title.h"
+#include "task_title.h"
 
 /** The global static variable used to transfer data from a signal handler to the program. 
  * Initialized to a NULL pointer, optimally to be set to the address of a variable used in the program.

@@ -1,4 +1,4 @@
-#include "title.h"
+#include "task_title.h"
 
 nextTask_t title_task(programData_t * data) {
 
@@ -28,6 +28,11 @@ nextTask_t title_task(programData_t * data) {
                 titleRun = 0;
             }
 
+            if(strchr(readBuffer, 'p') != NULL) {
+                result = TASK_GAME;
+                titleRun = 0;
+            }
+
         }
 
 
@@ -40,6 +45,8 @@ nextTask_t title_task(programData_t * data) {
 
         cursorMoveBy(RIGHT, 20);
         puts("TETRGS Title Screen");
+        cursorMoveBy(RIGHT, 20);
+        puts(" - Press 'p' to play game");
         cursorMoveBy(RIGHT, 20);
         puts(" - Press 'q' to exit");
         //printf(" - Read characters from stdin: %s\n", readBuffer);
