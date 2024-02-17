@@ -38,6 +38,7 @@ nextTask_t title_task(programData_t * data) {
 
         /* --- Render Component --- */
 
+        modeReset();
         erase();
         cursorHome();
         printf("Current delta time is: %lf\n", data->deltaTime);

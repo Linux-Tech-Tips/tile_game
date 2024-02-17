@@ -36,19 +36,6 @@ typedef enum {
     BLOCK_Z_R
 } blockType_t;
 
-/** The data structure holding the data of the falling block */
-typedef struct {
-
-    /** The position coordinates of the block */
-    int posX, posY;
-    /** The rotation of the block (expected values 0-3 for the 4 possible block rotations) */
-    short rotation;
-
-    /** The type of the block */
-    blockType_t type;
-
-} block_t;
-
 /** The data structure holding data specifically related to the game task */
 typedef struct {
 
@@ -60,8 +47,11 @@ typedef struct {
     /** The playing field - 10x20 dimensions, with one tile being 2x1 characters in size */
     char field [20][20];
 
-    /** The currently falling block */
-    block_t block;
+    /** The origin point (top left) of the game playing field */
+    int fieldOriginX, fieldOriginY;
+
+    /** The tiles of the currently falling block, specified as an array of XY coord pairs, with the first tile being the origin of rotation */
+    int blockTiles [4][2];
 
 } gameData_t;
 
@@ -77,5 +67,15 @@ void game_update(programData_t * data, gameData_t * gameData);
 /** Render/Draw function for the Game task */
 void game_render(programData_t data, gameData_t gameData);
 
+/** Moves the provided block (specified as an array of tiles) by the specified x and y amount */
+void game_moveBlock(int x, int y, int tiles [4][2]);
+
+/** Rotates the provided block (specified as an array of tiles) by 90° 
+ * NOTE: The function assumes the first tile is the origin of rotation for the Block
+*/
+void game_rotateBlock(int tiles [4][2]);
+
+/** Generates the coordinates of the tiles for the block of the given type */
+void game_genBlock(int tiles [4][2], blockType_t type);
 
 #endif /* TASK_GAME_H */
