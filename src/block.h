@@ -43,11 +43,11 @@ typedef struct {
 
 /* === Functions === */
 
-/** Moves the provided block by the specified x and y amount */
-void block_move(int x, int y, block_t * block);
+/** Moves the given tile by the specified offset */
+void block_moveTile(int tile [2], int x, int y);
 
-/** Rotates the provided block by 90° */
-void block_rotate(block_t * block);
+/** Rotates the given tile around the specified origin */
+void block_rotateTile(int tile [2], int originX, int originY);
 
 /** Populates the given block_t data structure with data of the given block type */
 void block_gen(block_t * block, blockType_t type, int startX, int startY);

@@ -13,7 +13,7 @@ nextTask_t game_task(programData_t * data) {
     gameData.field[1][19] = BLOCK_CUBE;
     gameData.field[1][18] = BLOCK_CUBE;
 
-    gameData.field[5][5] = BLOCK_T;
+    gameData.field[3][5] = BLOCK_T;
 
     /* Generating and moving demonstration block for this version of the game */
     block_gen(&gameData.block, BLOCK_T, 5, 5);
@@ -24,9 +24,9 @@ nextTask_t game_task(programData_t * data) {
         /* Starting frame time management */
         data_frameStart(data);
 
+        game_render(*data, gameData);
         game_update(data, &gameData);
 
-        game_render(*data, gameData);
 
         /* Ending frame time management, sleeping to keep desired updates per second */
         data_frameEnd(data, 60);
@@ -52,11 +52,11 @@ void game_update(programData_t * data, gameData_t * gameData) {
         /* Moving block on arrow keys */
         if(buffer[0] == (char)(27) && buffer[1] == (char)(91)) {
             if(buffer[2] == (char)(65))
-                block_rotate(&gameData->block);
+                game_rotateBlock(&gameData->block, gameData->field);
             else if(buffer[2] == (char)(67))
-                block_move(1, 0, &gameData->block);
+                game_moveBlock(&gameData->block, 1, 0, gameData->field);
             else if(buffer[2] == (char)(68))
-                block_move(-1, 0, &gameData->block);
+                game_moveBlock(&gameData->block, -1, 0, gameData->field);
         }
 
         if(strchr(buffer, '1'))
@@ -114,9 +114,70 @@ void game_render(programData_t data, gameData_t gameData) {
     cursorMoveBy(RIGHT, gameData.fieldOriginX);
     puts("|====================|");
 
-    /* Drawing the block (with the origin incremented by 1 tile, which is the origin of the internal part of the field) */
-    block_render(gameData.block, gameData.fieldOriginX+2, gameData.fieldOriginY+1);
+    /* Drawing the block (with the origin incremented by 1, which is the origin of the internal part of the field) 
+        NOTE: Here, fieldOriginX is offset by 1 because although the traditional tile has a width of 2, the vertical borders only have a width of 1 */
+    block_render(gameData.block, gameData.fieldOriginX+1, gameData.fieldOriginY+1);
 
     /* Flushing STDOUT at the end of render part of loop to make sure everything renders */
     fflush(stdout);
+}
+
+short game_moveBlock(block_t * block, int x, int y, char field [FIELD_X][FIELD_Y]) {
+
+    int newTiles [4][2];
+
+    /* Populating the array of new tiles and checking for collisions */
+    for(short i = 0; i < 4; i++) {
+        /* Moving i-th new tile */
+        newTiles[i][0] = block->tiles[i][0]; 
+        newTiles[i][1] = block->tiles[i][1];
+        block_moveTile(newTiles[i], x, y);
+
+        /* Collision checking */
+        if(_game_collideTile(newTiles[i][0], newTiles[i][1], field))
+            return 0;
+    }
+
+    /* If this point in code reached, no collisions detected, which means the block doesn't collide */
+    /* Overwriting the old tiles array with the newly created newTiles array */
+    for(short i = 0; i < 4; i++) {
+        block->tiles[i][0] = newTiles[i][0];
+        block->tiles[i][1] = newTiles[i][1];
+    }
+    /* Returning successful move */
+    return 1;
+}
+
+short game_rotateBlock(block_t * block, char field [FIELD_X][FIELD_Y]) {
+
+    int newTiles[4][2];
+    /* Copying the origin point */
+    newTiles[0][0] = block->tiles[0][0];
+    newTiles[0][1] = block->tiles[0][1];
+
+    for(short i = 1; i < 4; i++) {
+        /* Rotating i-th non-origin tile */
+        newTiles[i][0] = block->tiles[i][0];
+        newTiles[i][1] = block->tiles[i][1];
+        block_rotateTile(newTiles[i], newTiles[0][0], newTiles[0][1]);
+
+        /* Checking tile collisions */
+        if(_game_collideTile(newTiles[i][0], newTiles[i][1], field))
+            return 0;
+    }
+
+    /* If this point reached, no collisions detected, so the old tiles array is overwritten by the new array */
+    for(short i = 1; i < 4; i++) {
+        block->tiles[i][0] = newTiles[i][0];
+        block->tiles[i][1] = newTiles[i][1];
+    }
+
+    /* Returning successful rotate */
+    return 1;
+}
+
+short _game_collideTile(int tileX, int tileY, char field[FIELD_X][FIELD_Y]) {
+    /* Checking out-of-bounds first, then if within bounds, the position in the field is checked 
+        NOTE: the top bound is not checked, as blocks can fall from however high they like */
+    return (tileX < 0 || tileX >= FIELD_X || tileY >= FIELD_Y) || (tileY >= 0 && field[tileX][tileY] > 0);
 }

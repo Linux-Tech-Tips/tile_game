@@ -55,4 +55,17 @@ void game_update(programData_t * data, gameData_t * gameData);
 /** Render/Draw function for the Game task */
 void game_render(programData_t data, gameData_t gameData);
 
+/** Moves the given block and checks collisions with respect to the passed game field. If the movement would collide, the block isn't moved. 
+ * @return the result of the movement, whether moved successfully (1) or collided and not moved (0)
+*/
+short game_moveBlock(block_t * block, int x, int y, char field [FIELD_X][FIELD_Y]);
+
+/** Rotates the given block and checks collisions with respect to the passed game field. If the rotation would collide, the block isn't rotated. 
+ * @return the result of the rotation, whether rotated successfully (1) or collided and not rotated (0)
+*/
+short game_rotateBlock(block_t * block, char field [FIELD_X][FIELD_Y]);
+
+/** Internal function, collides the given tile coordinates with the given field and returns whether the tile collides (1) or not (0) */
+short _game_collideTile(int tileX, int tileY, char field[FIELD_X][FIELD_Y]);
+
 #endif /* TASK_GAME_H */
