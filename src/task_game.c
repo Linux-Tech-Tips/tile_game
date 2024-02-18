@@ -8,6 +8,13 @@ nextTask_t game_task(programData_t * data) {
     gameData.fieldOriginX = 16;
     gameData.fieldOriginY = 0;
 
+    gameData.field[0][19] = BLOCK_CUBE;
+    gameData.field[0][18] = BLOCK_CUBE;
+    gameData.field[1][19] = BLOCK_CUBE;
+    gameData.field[1][18] = BLOCK_CUBE;
+
+    gameData.field[5][5] = BLOCK_T;
+
     /* Generating and moving demonstration block for this version of the game */
     block_gen(&gameData.block, BLOCK_T, 5, 5);
 
@@ -86,24 +93,29 @@ void game_render(programData_t data, gameData_t gameData) {
     /* Drawing the game playing area field */
     cursorHome();
     cursorMoveBy(RIGHT, gameData.fieldOriginX);
-    if(gameData.fieldOriginY > 0)
-        cursorMoveBy(DOWN, gameData.fieldOriginY);
+    cursorMoveBy(DOWN, gameData.fieldOriginY);
     modeSet(NO_CODE, COLOR_WHITE, COLOR_BLACK);
-    puts("||||||||||||||||||||||");
-    for(short i = 0; i < 20; i++) {
+    puts("|====================|");
+    for(short y = 0; y < FIELD_Y; y++) {
         cursorMoveBy(RIGHT, gameData.fieldOriginX);
         putchar('|');
-        for(short j = 0; j < 20; j++) {
-            putchar(' ');
+        for(short x = 0; x < FIELD_X; x++) {
+            if(gameData.field[x][y] > 0) {
+                modeSet(NO_CODE, COLOR_BLACK, gameData.field[x][y]);
+                fputs("[]", stdout);
+            } else {
+                modeSet(NO_CODE, COLOR_WHITE, COLOR_BLACK);
+                fputs("  ", stdout);
+            }
         }
         putchar('|');
         putchar('\n');
     }
     cursorMoveBy(RIGHT, gameData.fieldOriginX);
-    puts("||||||||||||||||||||||");
+    puts("|====================|");
 
-    /* Drawing the block */
-    block_render(gameData.block, gameData.fieldOriginX, gameData.fieldOriginY);
+    /* Drawing the block (with the origin incremented by 1 tile, which is the origin of the internal part of the field) */
+    block_render(gameData.block, gameData.fieldOriginX+2, gameData.fieldOriginY+1);
 
     /* Flushing STDOUT at the end of render part of loop to make sure everything renders */
     fflush(stdout);

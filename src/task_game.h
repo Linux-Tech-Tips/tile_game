@@ -17,7 +17,12 @@
 #include "block.h"
 
 
-/* === Data Structures === */
+/* === Data Structures and Constants === */
+
+/** The width of the playing field */
+#define FIELD_X 10
+/** The height of the playing field */
+#define FIELD_Y 20
 
 /** The data structure holding data specifically related to the game task */
 typedef struct {
@@ -27,8 +32,8 @@ typedef struct {
     /** Next task to switch to if the Game task terminates */
     nextTask_t nextTask;
 
-    /** The playing field - 10x20 dimensions, with one tile being 2x1 characters in size */
-    char field [20][20];
+    /** The playing field, with one tile being 2x1 characters in size */
+    char field [FIELD_X][FIELD_Y];
 
     /** The origin point (top left) of the game playing field */
     int fieldOriginX, fieldOriginY;
