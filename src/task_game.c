@@ -57,6 +57,10 @@ void game_update(programData_t * data, gameData_t * gameData) {
                 game_moveBlock(&gameData->block, 1, 0, gameData->field);
             else if(buffer[2] == (char)(68))
                 game_moveBlock(&gameData->block, -1, 0, gameData->field);
+            else if(buffer[2] == (char)(66))
+                game_moveBlock(&gameData->block, 0, 1, gameData->field);
+        } else if(strchr(buffer, ' ')) {
+            game_moveBlock(&gameData->block, 0, -1, gameData->field);
         }
 
         if(strchr(buffer, '1'))
