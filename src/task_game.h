@@ -10,7 +10,10 @@
 #ifndef TASK_GAME_H
 #define TASK_GAME_H
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include "terminal_gui/terminal_f.h"
 
 #include "data.h"
@@ -32,6 +35,9 @@ typedef struct {
     /** Next task to switch to if the Game task terminates */
     nextTask_t nextTask;
 
+    /** The current score of the game */
+    int score;
+
     /** The playing field, with one tile being 2x1 characters in size */
     char field [FIELD_X][FIELD_Y];
 
@@ -40,6 +46,22 @@ typedef struct {
 
     /** The tiles of the currently falling block, specified as an array of XY coord pairs, with the first tile being the origin of rotation */
     block_t block;
+    /** The last block type generated, to limit the same block type generating twice in a row */
+    blockType_t lastBlock;
+
+    /** The default/initial time it takes for a block to fall down 1 step */
+    float defaultFallDelay;
+    /** The current time it takes for a block to fall down 1 step */
+    float fallDelay;
+    /** The timer for the current 1-step fall */
+    float fallTimer;
+    /** Whether the block is currently falling */
+    short falling;
+
+    /** The time it takes for a non-falling block to be placed down */
+    float placeDelay;
+    /** The timer for the current block placement */
+    float placeTimer;
 
 } gameData_t;
 
@@ -56,9 +78,10 @@ void game_update(programData_t * data, gameData_t * gameData);
 void game_render(programData_t data, gameData_t gameData);
 
 /** Moves the given block and checks collisions with respect to the passed game field. If the movement would collide, the block isn't moved. 
+ * @param dryRun if this is 1, the movement isn't actually saved, and only the result is returned, behaving as only a collision checker
  * @return the result of the movement, whether moved successfully (1) or collided and not moved (0)
 */
-short game_moveBlock(block_t * block, int x, int y, char field [FIELD_X][FIELD_Y]);
+short game_moveBlock(block_t * block, int x, int y, char field [FIELD_X][FIELD_Y], short dryRun);
 
 /** Rotates the given block and checks collisions with respect to the passed game field. If the rotation would collide, the block isn't rotated. 
  * @return the result of the rotation, whether rotated successfully (1) or collided and not rotated (0)
@@ -67,5 +90,16 @@ short game_rotateBlock(block_t * block, char field [FIELD_X][FIELD_Y]);
 
 /** Internal function, collides the given tile coordinates with the given field and returns whether the tile collides (1) or not (0) */
 short _game_collideTile(int tileX, int tileY, char field[FIELD_X][FIELD_Y]);
+
+/** Internal function, generates a block in the gameData_t structure at the given starting position, of a random type. 
+ * The function keeps track of the last block that was generated, forcing a single reroll upon generating the same block twice in a row, 
+ * which decreases the chances of duplicate block generation, while keeping it as a rare game mechanic/feature.
+*/
+void _game_genBlock(gameData_t * data, int startX, int startY);
+
+/** Internal function, places down the currently existing block at its position into the game's field and returns whether placed correctly 
+ * @returns 1 if the block was placed correctly, 0 if not
+*/
+short _game_placeBlock(gameData_t * data);
 
 #endif /* TASK_GAME_H */
