@@ -21,7 +21,7 @@ static short * signalRun = NULL;
 /** Function to handle received SIGINT signal to allow for graceful program termination */
 void signalHandler(int sigID);
 
-
+/* Main function */
 int main() {
 
     /* Attaching a signal handler for a graceful exit on receiving SIGINT */
@@ -45,10 +45,12 @@ int main() {
     nextTask_t nextTask = TASK_TITLE;
     while(data.run) {
         switch(nextTask) {
+            /* Title screen task */
             case TASK_TITLE:
                 nextTask = title_task(&data);
             break;
 
+            /* Game task */
             case TASK_GAME:
                 nextTask = game_task(&data);
             break;
@@ -72,12 +74,12 @@ int main() {
     /* Data termination - saving */
     data_save(data, ".game_data");
 
+    /* Returning successful exit to shell */
     return 0;
-
 }
 
 
-/* === Other function implementations === */
+/* --- Other function implementations --- */
 
 void signalHandler(int sigID) {
     if(signalRun != NULL) {

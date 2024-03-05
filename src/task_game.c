@@ -19,7 +19,7 @@ nextTask_t game_task(programData_t * data) {
 
     /* Generating the initial block */
     gameData.falling = 1;
-    _game_genBlock(&gameData, 4, -1);
+    _game_genBlock(&gameData, 4, 0);
 
     /* Game Task Loop */
     while(gameData.gameRun && data->run) {
@@ -27,8 +27,8 @@ nextTask_t game_task(programData_t * data) {
         /* Starting frame time management */
         data_frameStart(data);
 
-        game_render(*data, gameData);
         game_update(data, &gameData);
+        game_render(*data, gameData);
 
 
         /* Ending frame time management, sleeping to keep desired updates per second */
@@ -54,16 +54,27 @@ void game_update(programData_t * data, gameData_t * gameData) {
 
         /* Moving block on arrow keys */
         if(buffer[0] == (char)(27) && buffer[1] == (char)(91)) {
-            if(buffer[2] == (char)(65))
+            short moved = 0;
+            if(buffer[2] == (char)(65)) {
                 game_rotateBlock(&gameData->block, gameData->field);
-            else if(buffer[2] == (char)(67))
+                moved = 1;
+            } else if(buffer[2] == (char)(67)) {
                 game_moveBlock(&gameData->block, 1, 0, gameData->field, 0);
-            else if(buffer[2] == (char)(68))
+                moved = 1;
+            } else if(buffer[2] == (char)(68)) {
                 game_moveBlock(&gameData->block, -1, 0, gameData->field, 0);
-            else if(buffer[2] == (char)(66))
+                moved = 1;
+            } else if(buffer[2] == (char)(66)) {
                 game_moveBlock(&gameData->block, 0, 1, gameData->field, 0);
+                moved = 1;
+            }
+
+            if(moved) {
+                if(!gameData->falling && gameData->placeTimer > 0) {
+                    gameData->placeTimer += 0.5f * data->deltaTime;
+                }
+            }
         }
-        
     }
 
     /* Check whether the block is in falling state or being placed state */
@@ -86,7 +97,7 @@ void game_update(programData_t * data, gameData_t * gameData) {
                 gameData->nextTask = TASK_TITLE;
                 gameData->gameRun = 0;
             }
-            _game_genBlock(gameData, 4, -1);
+            _game_genBlock(gameData, 4, 0);
             gameData->placeTimer = gameData->placeDelay;
             gameData->falling = 0;
         }
@@ -252,7 +263,7 @@ short _game_placeBlock(gameData_t * data) {
     for(short i = 0; i < 4; i++) {
         int blockX = data->block.tiles[i][0];
         int blockY = data->block.tiles[i][1];
-        if((blockX >= 0 && blockX < FIELD_X) && (blockY >= 0 && blockY < FIELD_Y))
+        if((blockX >= 0 && blockX < FIELD_X) && (blockY >= 0 && blockY < FIELD_Y) && (data->field[blockX][blockY] < 1))
             data->field[blockX][blockY] = data->block.type;
         else
             result = 0;
