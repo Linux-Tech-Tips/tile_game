@@ -11,7 +11,21 @@
 
 #include "terminal_gui/terminal_f.h"
 
-/* === Data Structures and Types === */
+/* === Data Structures, Types and Constants === */
+
+/** The size (number of tiles) of a standard block */
+#define BLOCK_SIZE 4
+/** The number of coordinate values (here: XY -> 2) of a tile, for clarity and to avoid magic numbers elsewhere in code */
+#define TILE_XY 2
+/** The index of a tile's x coordinate */
+#define TILE_X 0
+/** The index of a tile's y coordinate */
+#define TILE_Y 1
+
+/** The number of unique defined block types */
+#define BLOCK_TYPE_NUM 7
+/** The number of times the complete block set fits into the bag */
+#define BLOCK_BAG_SIZE 2
 
 /** Enumeration defining the type of block */
 typedef enum {
@@ -31,37 +45,40 @@ typedef enum {
     BLOCK_Z_R = COLOR_RED
 } blockType_t;
 
+/** The smallest value the blockType_t enumeration can evaluate to */
+#define BLOCK_TYPE_MIN 41
+/** The largest value the blockType_t enumeration can evaluate to */
+#define BLOCK_TYPE_MAX 47
+
 /** The data structure containing information about a given block 
  * NOTE: The format the tiles of the block are saved as is a fixed-size array of tiles[4][2], as 
  *       each block is made of 4 tiles, with XY coords of length 2
 */
 typedef struct {
     /** The tiles the block consists of */
-    int tiles [4][2];
+    int tiles [BLOCK_SIZE][TILE_XY];
     /** The type of the block (mostly responsible for visuals, color) */
     blockType_t type;
 } block_t;
 
-/** The data structure containing a block randomizer bag, including a shuffled list and the index of the next element
- * NOTE: The bag uses a shuffle of 14 elements - 2x of each blockType
-*/
+/** The data structure containing a block randomizer bag, including a shuffled list and the index of the next element */
 typedef struct {
-    blockType_t shuffle [14];
+    blockType_t shuffle [BLOCK_BAG_SIZE * BLOCK_TYPE_NUM];
     int nextIdx;
 } bag_t;
 
 /* === Functions === */
 
 /** Moves the given tile by the specified offset */
-void block_moveTile(int tile [2], int x, int y);
+void block_moveTile(int tile [TILE_XY], int x, int y);
 
 /** Rotates the given tile around the specified origin */
-void block_rotateTile(int tile [2], int originX, int originY);
+void block_rotateTile(int tile [TILE_XY], int originX, int originY);
 
 /** Populates the given block_t data structure with data of the given block type */
 void block_gen(block_t * block, blockType_t type, int startX, int startY);
 
-/** Internal function, assigns the given coordinates to the correct fields in the block structure */
+/** Internal function, assigns the given coordinates to the correct fields in the block structure (number of arguments should correspond with defined BLOCK_SIZE) */
 void _block_genTiles(block_t * block, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4);
 
 /** Draws the desired block to the terminal, with a specifiable custom (top-left) origin point */

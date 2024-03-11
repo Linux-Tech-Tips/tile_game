@@ -12,6 +12,11 @@
 
 #include "data.h"
 
+/** Updates-per-second rate for the TASK_TITLE task */
+#define TASK_TITLE_UPS 10
+/** The number of keyboard inputs read in one update of the TASK_TITLE task */
+#define TASK_TITLE_KEYS 4
+
 /** The main task function for the Title task, consisting of task init, task loop and task termination */
 nextTask_t title_task(programData_t * data);
 

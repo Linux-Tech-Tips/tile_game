@@ -11,7 +11,6 @@ To try out the demo, clone the repository on a Linux machine with *gcc* and *mak
 ## TODO
 
 Features to work on:
-- Code refactoring - clear out magic numbers
 - Pause menu
 - Gameplay speeding up
 - Score for dropping block/better score system

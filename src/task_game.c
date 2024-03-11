@@ -5,6 +5,8 @@ nextTask_t game_task(programData_t * data) {
     /* Game Task Initialization */
     gameData_t gameData = {0};
     gameData.gameRun = 1;
+
+    /* TODO Field origin will be defined based on the terminal size, once dynamic UI implemented */
     gameData.fieldOriginX = 16;
     gameData.fieldOriginY = 0;
 
@@ -20,7 +22,7 @@ nextTask_t game_task(programData_t * data) {
     /* Generating the initial block */
     gameData.falling = 1;
     block_initBag(&gameData.blockBag);
-    _game_genBlock(&gameData, 4, 0);
+    _game_genBlock(&gameData, GAME_NEW_BLOCK_X, GAME_NEW_BLOCK_Y);
 
     /* Game Task Loop */
     while(gameData.gameRun && data->run) {
@@ -33,7 +35,7 @@ nextTask_t game_task(programData_t * data) {
 
 
         /* Ending frame time management, sleeping to keep desired updates per second */
-        data_frameEnd(data, 60);
+        data_frameEnd(data, TASK_GAME_UPS);
     }
 
     /* Game Task Termination */
@@ -42,9 +44,9 @@ nextTask_t game_task(programData_t * data) {
 
 void game_update(programData_t * data, gameData_t * gameData) {
 
-    /* Reading keyboard input - up to 3 characters per frame */
-    char buffer [3];
-    short keyIn = nbRead(buffer, 3);
+    /* Reading keyboard input - up to TASK_GAME_KEYS characters per frame */
+    char buffer [TASK_GAME_KEYS];
+    short keyIn = nbRead(buffer, TASK_GAME_KEYS);
 
     if(keyIn) {
         /* Quitting if desired */
@@ -98,7 +100,7 @@ void game_update(programData_t * data, gameData_t * gameData) {
                 gameData->nextTask = TASK_TITLE;
                 gameData->gameRun = 0;
             }
-            _game_genBlock(gameData, 4, 0);
+            _game_genBlock(gameData, GAME_NEW_BLOCK_X, GAME_NEW_BLOCK_Y);
             gameData->placeTimer = gameData->placeDelay;
             gameData->falling = 0;
         }

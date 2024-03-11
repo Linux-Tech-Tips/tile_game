@@ -17,8 +17,8 @@ nextTask_t title_task(programData_t * data) {
         /* --- Update Component --- */
 
         /* Reading keyboard input - maximum of 4 characters a frame (no more precision required for the Title task) */
-        char readBuffer [4] = {0};
-        short keyIn = nbRead(readBuffer, 4);
+        char readBuffer [TASK_TITLE_KEYS] = {0};
+        short keyIn = nbRead(readBuffer, TASK_TITLE_KEYS);
 
         /* Processing keyboard input */
         if(keyIn) {
@@ -52,14 +52,14 @@ nextTask_t title_task(programData_t * data) {
         puts(" - Press 'q' to exit");
         //printf(" - Read characters from stdin: %s\n", readBuffer);
         printf("\nCharacters read from stdin (as numbers): ");
-        for(int i = 0; i < 4; i++) {
+        for(int i = 0; i < TASK_TITLE_KEYS; i++) {
             printf("(%d) ", (int)readBuffer[i]);
         }
         puts(";");
 
         
         /* Ending frame time measurement, sleeping to match desired updates per second */
-        data_frameEnd(data, 10);
+        data_frameEnd(data, TASK_TITLE_UPS);
     }
 
 

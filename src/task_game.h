@@ -27,6 +27,16 @@
 /** The height of the playing field */
 #define FIELD_Y 20
 
+/** The x coordinate of any newly created block */
+#define GAME_NEW_BLOCK_X 4
+/** The y coordinate of any newly created block */
+#define GAME_NEW_BLOCK_Y 0
+
+/** Updates-per-second rate for the TASK_GAME task */
+#define TASK_GAME_UPS 60
+/** The number of keyboard inputs read in one update of the TASK_GAME task */
+#define TASK_GAME_KEYS 3
+
 /** The data structure holding data specifically related to the game task */
 typedef struct {
 
