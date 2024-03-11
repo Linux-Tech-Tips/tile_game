@@ -7,6 +7,8 @@
 #ifndef BLOCK_H
 #define BLOCK_H
 
+#include <stdlib.h>
+
 #include "terminal_gui/terminal_f.h"
 
 /* === Data Structures and Types === */
@@ -40,6 +42,13 @@ typedef struct {
     blockType_t type;
 } block_t;
 
+/** The data structure containing a block randomizer bag, including a shuffled list and the index of the next element
+ * NOTE: The bag uses a shuffle of 14 elements - 2x of each blockType
+*/
+typedef struct {
+    blockType_t shuffle [14];
+    int nextIdx;
+} bag_t;
 
 /* === Functions === */
 
@@ -57,5 +66,18 @@ void _block_genTiles(block_t * block, int x1, int y1, int x2, int y2, int x3, in
 
 /** Draws the desired block to the terminal, with a specifiable custom (top-left) origin point */
 void block_render(block_t block, int originX, int originY);
+
+/** Returns the next blockType_t drawn from the given bag, reshuffles bag if end reached 
+ * NOTE: On any error, the function defaults to the T block
+*/
+blockType_t block_getNext(bag_t * bag);
+
+/** Shuffles the given bag randomly (Knuth-based shuffle) and resets the next element index to 0 */
+void block_shuffleBag(bag_t * bag);
+
+/** Initializes the bag structure with unshuffled blocks and an index of 0, and proceeds to shuffle the blocks
+ * NOTE: The format the unshuffled bag is generated in is all the blocks in order, twice
+*/
+void block_initBag(bag_t * bag);
 
 #endif /* BLOCK_H */

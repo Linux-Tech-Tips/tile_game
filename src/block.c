@@ -81,3 +81,48 @@ void block_render(block_t block, int originX, int originY) {
         puts("[]");
     }
 }
+
+blockType_t block_getNext(bag_t * bag) {
+    /* Reshuffling if index reached out of bounds */
+    if(bag->nextIdx >= 14) {
+        block_shuffleBag(bag);
+    }
+
+    /* Returning the next block type if bag valid, otherwise T block */
+    if(bag->nextIdx < 14 && bag->nextIdx >= 0) {
+        return bag->shuffle[bag->nextIdx++];
+    } else {
+        return BLOCK_T;
+    }
+}
+
+void block_shuffleBag(bag_t * bag) {
+    /* Shuffling the bag from largest array index to the second index */
+    for(int i = 13; i > 0; i--) {
+        /* Generating random element from the left-hand side of the array to swap the current element with */
+        int j = rand() % (i+1);
+        /* Swapping elements */
+        if(j != i) {
+            int tmp = bag->shuffle[j];
+            bag->shuffle[j] = bag->shuffle[i];
+            bag->shuffle[i] = tmp;
+        }
+    }
+    /* Resetting next block index */
+    bag->nextIdx = 0;
+}
+
+void block_initBag(bag_t * bag) {
+    /* Initializing the block array which will be shuffled */
+    for(int i = 0; i < 7; i++) {
+        /* Creating the next tile based on the iteration number */
+        blockType_t b = 41 + i;
+        /* Writing the block type into the expected array position */
+        bag->shuffle[i] = b;
+        bag->shuffle[i+7] = b;
+    }
+    /* Initializing next index to 0 */
+    bag->nextIdx = 0;
+    /* Shuffling the new initialized bag */
+    block_shuffleBag(bag);
+}

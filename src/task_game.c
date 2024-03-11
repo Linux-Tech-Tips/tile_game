@@ -19,6 +19,7 @@ nextTask_t game_task(programData_t * data) {
 
     /* Generating the initial block */
     gameData.falling = 1;
+    block_initBag(&gameData.blockBag);
     _game_genBlock(&gameData, 4, 0);
 
     /* Game Task Loop */
@@ -246,16 +247,8 @@ short _game_collideTile(int tileX, int tileY, char field[FIELD_X][FIELD_Y]) {
 }
 
 void _game_genBlock(gameData_t * data, int startX, int startY) {
-    /* Block types are defined using color code values - [41,47], therefore, random generation must be shifted by the lower bound of 41 */
-    blockType_t blockType = (blockType_t)(rand() % 7 + 41);
-
-    /* If the same block as last time generated, reroll, but with no further checks - doesn't prevent successive blocks, but decreases rarity */
-    if(data->lastBlock == blockType)
-        blockType = (blockType_t)(rand() % 7 + 41);
-
-    /* Generating the desired block */
-    data->lastBlock = blockType;
-    block_gen(&data->block, blockType, startX, startY);
+    /* Returning a newly generated block of type determined by the bag */
+    block_gen(&data->block, block_getNext(&data->blockBag), startX, startY);
 }
 
 short _game_placeBlock(gameData_t * data) {

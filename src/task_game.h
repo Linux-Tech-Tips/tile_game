@@ -46,8 +46,8 @@ typedef struct {
 
     /** The tiles of the currently falling block, specified as an array of XY coord pairs, with the first tile being the origin of rotation */
     block_t block;
-    /** The last block type generated, to limit the same block type generating twice in a row */
-    blockType_t lastBlock;
+    /** The randomizer bag to generate a constrained random next block */
+    bag_t blockBag;
 
     /** The default/initial time it takes for a block to fall down 1 step */
     float defaultFallDelay;

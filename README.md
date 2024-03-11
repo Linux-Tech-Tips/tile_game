@@ -11,7 +11,6 @@ To try out the demo, clone the repository on a Linux machine with *gcc* and *mak
 ## TODO
 
 Features to work on:
-- Bag-based randomizer
 - Gameplay speeding up
 - Block drop visual guide
 - Spacebar to drop block
