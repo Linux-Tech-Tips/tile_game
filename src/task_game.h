@@ -37,6 +37,12 @@
 /** The number of keyboard inputs read in one update of the TASK_GAME task */
 #define TASK_GAME_KEYS 3
 
+typedef enum {
+    GAME_RUN,
+    GAME_PAUSED,
+    GAME_OVER
+} gameState_t;
+
 /** The data structure holding data specifically related to the game task */
 typedef struct {
 
@@ -45,12 +51,19 @@ typedef struct {
     /** Next task to switch to if the Game task terminates */
     nextTask_t nextTask;
 
+    /** The current state of the game */
+    gameState_t gameState;
+
+    /** Variable storing whether any keyboard input read in the last frame */
+    short keyIn;
+    /** Variable storing the keyboard input buffer read in the last frame */
+    char keyBuffer [TASK_GAME_KEYS];
+
     /** The current score of the game */
     int score;
 
     /** The playing field, with one tile being 2x1 characters in size */
     char field [FIELD_X][FIELD_Y];
-
     /** The origin point (top left) of the game playing field */
     int fieldOriginX, fieldOriginY;
 
@@ -81,11 +94,38 @@ typedef struct {
 /** The main task function for the Game task */
 nextTask_t game_task(programData_t * data);
 
-/** Update function for the Game task */
+
+/* --- Update Functions --- */
+
+/** General update function for the Game task (logic shared by all states) */
 void game_update(programData_t * data, gameData_t * gameData);
+
+/** Update function containing the GAME_RUN state logic */
+void game_updateRun(programData_t * data, gameData_t * gameData);
+
+/** Update function containing the GAME_PAUSED state logic */
+void game_updatePaused(programData_t * data, gameData_t * gameData);
+
+/** Update function containing the GAME_OVER state logic */
+void game_updateOver(programData_t * data, gameData_t * gameData);
+
+
+/* --- Render Functions --- */
 
 /** Render/Draw function for the Game task */
 void game_render(programData_t data, gameData_t gameData);
+
+/** Render function containing specific separate GAME_RUN state draw calls */
+void game_renderRun(programData_t data, gameData_t gameData);
+
+/** Render function containing specific separate GAME_PAUSED state draw calls */
+void game_renderPaused(programData_t data, gameData_t gameData);
+
+/** Render function containing specific separate GAME_OVER state draw calls */
+void game_renderOver(programData_t data, gameData_t gameData);
+
+
+/* --- Other Functions --- */
 
 /** Moves the given block and checks collisions with respect to the passed game field. If the movement would collide, the block isn't moved. 
  * @param dryRun if this is 1, the movement isn't actually saved, and only the result is returned, behaving as only a collision checker

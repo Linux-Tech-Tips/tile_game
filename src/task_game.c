@@ -6,6 +6,8 @@ nextTask_t game_task(programData_t * data) {
     gameData_t gameData = {0};
     gameData.gameRun = 1;
 
+    gameData.gameState = GAME_RUN;
+
     /* TODO Field origin will be defined based on the terminal size, once dynamic UI implemented */
     gameData.fieldOriginX = 16;
     gameData.fieldOriginY = 0;
@@ -30,9 +32,9 @@ nextTask_t game_task(programData_t * data) {
         /* Starting frame time management */
         data_frameStart(data);
 
+        /* Main update and render functions */
         game_update(data, &gameData);
         game_render(*data, gameData);
-
 
         /* Ending frame time management, sleeping to keep desired updates per second */
         data_frameEnd(data, TASK_GAME_UPS);
@@ -42,43 +44,73 @@ nextTask_t game_task(programData_t * data) {
     return gameData.nextTask;
 }
 
+
 void game_update(programData_t * data, gameData_t * gameData) {
 
+    /* Clearing the previous frame's keyboard input */
+    gameData->keyBuffer[0] = 0;
+    gameData->keyBuffer[1] = 0;
+    gameData->keyBuffer[2] = 0;
     /* Reading keyboard input - up to TASK_GAME_KEYS characters per frame */
-    char buffer [TASK_GAME_KEYS];
-    short keyIn = nbRead(buffer, TASK_GAME_KEYS);
+    gameData->keyIn = nbRead(gameData->keyBuffer, TASK_GAME_KEYS);
 
-    if(keyIn) {
-        /* Quitting if desired */
-        if(strchr(buffer, 'q')) {
-            gameData->nextTask = TASK_TITLE;
-            gameData->gameRun = 0;
-        }
+    /* Updating state-specific logic based on current state */
+    switch(gameData->gameState) {
+        case GAME_RUN:
+            game_updateRun(data, gameData);
+        break;
+
+        case GAME_PAUSED:
+            game_updatePaused(data, gameData);
+        break;
+
+        case GAME_OVER:
+            game_updateOver(data, gameData);
+        break;
+    }
+
+}
+
+void game_updateRun(programData_t * data, gameData_t * gameData) {
+
+    /* --- Keyboard Processing --- */
+
+    /* NOTE: Keyboard processing expects only one key to be pressed in a frame, and processes said key from buffer[0] */
+    if(gameData->keyIn) {
 
         /* Moving block on arrow keys */
-        if(buffer[0] == (char)(27) && buffer[1] == (char)(91)) {
+        if(gameData->keyBuffer[0] == (char)(27) && gameData->keyBuffer[1] == (char)(91)) {
             short moved = 0;
-            if(buffer[2] == (char)(65)) {
+            /* Moving block in desired direction */
+            if(gameData->keyBuffer[2] == (char)(65)) {
                 game_rotateBlock(&gameData->block, gameData->field);
                 moved = 1;
-            } else if(buffer[2] == (char)(67)) {
+            } else if(gameData->keyBuffer[2] == (char)(67)) {
                 game_moveBlock(&gameData->block, 1, 0, gameData->field, 0);
                 moved = 1;
-            } else if(buffer[2] == (char)(68)) {
+            } else if(gameData->keyBuffer[2] == (char)(68)) {
                 game_moveBlock(&gameData->block, -1, 0, gameData->field, 0);
                 moved = 1;
-            } else if(buffer[2] == (char)(66)) {
+            } else if(gameData->keyBuffer[2] == (char)(66)) {
                 game_moveBlock(&gameData->block, 0, 1, gameData->field, 0);
                 moved = 1;
             }
 
+            /* Slow down place timer if block moved in any direction */
             if(moved) {
                 if(!gameData->falling && gameData->placeTimer > 0) {
                     gameData->placeTimer += 0.5f * data->deltaTime;
                 }
             }
+        
+        /* Processing paused state for next frame */
+        } else if(gameData->keyBuffer[0] == 'p' || (gameData->keyBuffer[0] == (char)(27) && gameData->keyBuffer[1] == 0)) {
+            gameData->gameState = GAME_PAUSED;
         }
     }
+
+
+    /* --- Gameplay Logic --- */
 
     /* Check whether the block is in falling state or being placed state */
     if(gameData->falling) {
@@ -97,8 +129,7 @@ void game_update(programData_t * data, gameData_t * gameData) {
         } else {
             /* Place down block, reset falling block */
             if(!_game_placeBlock(gameData)) {
-                gameData->nextTask = TASK_TITLE;
-                gameData->gameRun = 0;
+                gameData->gameState = GAME_OVER;
             }
             _game_genBlock(gameData, GAME_NEW_BLOCK_X, GAME_NEW_BLOCK_Y);
             gameData->placeTimer = gameData->placeDelay;
@@ -135,8 +166,35 @@ void game_update(programData_t * data, gameData_t * gameData) {
     /* Adding score if lines cleared in the frame */
     if(lineClears > 0)
         gameData->score += (2*lineClears - 1);
+}
+
+void game_updatePaused(programData_t * data, gameData_t * gameData) {
+    
+    if(gameData->keyIn) {
+        /* Unpause logic */
+        if(gameData->keyBuffer[0] == 'p' || (gameData->keyBuffer[0] == (char)(27) && gameData->keyBuffer[1] == 0)) {
+            gameData->gameState = GAME_RUN;
+        }
+        
+        /* Quit logic */
+        if(gameData->keyBuffer[0] == 'q') {
+            gameData->nextTask = TASK_TITLE;
+            gameData->gameRun = 0;
+        }
+    }
 
 }
+
+void game_updateOver(programData_t * data, gameData_t * gameData) {
+    if(gameData->keyIn) {
+        /* Quit logic */
+        if(gameData->keyBuffer[0] == 'q') {
+            gameData->nextTask = TASK_TITLE;
+            gameData->gameRun = 0;
+        }
+    }
+}
+
 
 void game_render(programData_t data, gameData_t gameData) {
 
@@ -180,11 +238,58 @@ void game_render(programData_t data, gameData_t gameData) {
         NOTE: Here, fieldOriginX is offset by 1 because although the traditional tile has a width of 2, the vertical borders only have a width of 1 */
     block_render(gameData.block, gameData.fieldOriginX+1, gameData.fieldOriginY+1);
 
+    /* Drawing stuff specific to current state */
+    switch(gameData.gameState) {
+        case GAME_RUN:
+            game_renderRun(data, gameData);
+        break;
+
+        case GAME_PAUSED:
+            game_renderPaused(data, gameData);
+        break;
+
+        case GAME_OVER:
+            game_renderOver(data, gameData);
+        break;
+    }
+
     modeReset();
 
     /* Flushing STDOUT at the end of render part of loop to make sure everything renders */
     fflush(stdout);
 }
+
+void game_renderRun(programData_t data, gameData_t gameData) {
+    /* TODO Put something here if any specific draw calls found */
+}
+
+void game_renderPaused(programData_t data, gameData_t gameData) {
+
+    /* Rendering pause menu somewhere approx in the field */    
+    modeSet(NO_CODE, COLOR_BLACK, COLOR_WHITE);
+    cursorHome();
+    cursorMoveBy(RIGHT, 24);
+    cursorMoveBy(DOWN, 8);
+    puts("GAME PAUSED");
+    cursorMoveBy(RIGHT, 24);
+    puts(" - Press ESC or 'p' to continue");
+    cursorMoveBy(RIGHT, 24);
+    puts(" - Press 'q' to quit");
+}
+
+void game_renderOver(programData_t data, gameData_t gameData) {
+    
+    /* Rendering game over dialog */
+    modeSet(NO_CODE, COLOR_BLACK, COLOR_WHITE);
+    cursorHome();
+    cursorMoveBy(RIGHT, 24);
+    cursorMoveBy(DOWN, 8);
+    puts("GAME OVER");
+    cursorMoveBy(RIGHT, 24);
+    puts(" - Press q to quit");
+
+}
+
 
 short game_moveBlock(block_t * block, int x, int y, char field [FIELD_X][FIELD_Y], short dryRun) {
 
