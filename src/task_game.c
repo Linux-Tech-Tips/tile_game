@@ -164,8 +164,10 @@ void game_updateRun(programData_t * data, gameData_t * gameData) {
     }
 
     /* Adding score if lines cleared in the frame */
-    if(lineClears > 0)
+    if(lineClears > 0) {
         gameData->score += (2*lineClears - 1);
+        gameData->fallDelay *= 0.95f - 0.025f * (lineClears - 1);
+    }
 }
 
 void game_updatePaused(programData_t * data, gameData_t * gameData) {
