@@ -22,7 +22,15 @@ static short * signalRun = NULL;
 void signalHandler(int sigID);
 
 /* Main function */
-int main() {
+int main(int argc, char * argv []) {
+
+    /* Minimum terminal size check */
+    int x = -1, y = -1;
+    getTerminalSize(&x, &y);
+    if(x < TERM_MIN_X || y < TERM_MIN_Y) {
+        fprintf(stderr, "Unsupported Terminal Size: %dx%d (minimum 48x24 required)\n", x, y);
+        return 1;
+    }
 
     /* Attaching a signal handler for a graceful exit on receiving SIGINT */
     struct sigaction signalControl = {0};

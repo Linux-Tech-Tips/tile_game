@@ -10,6 +10,9 @@
 #ifndef PROGRAM_DATA_H
 #define PROGRAM_DATA_H
 
+#define TERM_MIN_X 48
+#define TERM_MIN_Y 24
+
 #include <time.h>
 
 

@@ -47,6 +47,13 @@ nextTask_t game_task(programData_t * data) {
 
 void game_update(programData_t * data, gameData_t * gameData) {
 
+    /* Getting the current frame terminal size */
+    getTerminalSize(&(gameData->termX), &(gameData->termY));
+
+    if(gameData->gameState != GAME_INVALID && (gameData->termX < TERM_MIN_X || gameData->termY < TERM_MIN_Y)) {
+        gameData->gameState = GAME_INVALID;
+    }
+
     /* Clearing the previous frame's keyboard input */
     gameData->keyBuffer[0] = 0;
     gameData->keyBuffer[1] = 0;
@@ -66,6 +73,10 @@ void game_update(programData_t * data, gameData_t * gameData) {
 
         case GAME_OVER:
             game_updateOver(data, gameData);
+        break;
+
+        case GAME_INVALID:
+            game_updateInvalid(data, gameData);
         break;
     }
 
@@ -199,6 +210,21 @@ void game_updateOver(programData_t * data, gameData_t * gameData) {
     }
 }
 
+void game_updateInvalid(programData_t * data, gameData_t * gameData) {
+
+    if(gameData->keyIn) {
+        if(gameData->keyBuffer[0] == 'q') {
+            gameData->nextTask = TASK_EXIT;
+            gameData->gameRun = 0;
+        }
+    }
+
+    if(gameData->termX >= TERM_MIN_X && gameData->termY >= TERM_MIN_Y) {
+        gameData->gameState = GAME_PAUSED;
+    }
+
+}
+
 
 void game_render(programData_t data, gameData_t gameData) {
 
@@ -255,6 +281,10 @@ void game_render(programData_t data, gameData_t gameData) {
         case GAME_OVER:
             game_renderOver(data, gameData);
         break;
+
+        case GAME_INVALID:
+            game_renderInvalid(data, gameData);
+        break;
     }
 
     modeReset();
@@ -292,6 +322,16 @@ void game_renderOver(programData_t data, gameData_t gameData) {
     cursorMoveBy(RIGHT, 24);
     puts(" - Press q to quit");
 
+}
+
+void game_renderInvalid(programData_t data, gameData_t gameData) {
+
+    /* Rendering error dialog */
+    modeReset();
+    erase();
+    cursorHome();
+    printf("The current Terminal size (%dx%d) is invalid (minimum %dx%d).\n", gameData.termX, gameData.termY, TERM_MIN_X, TERM_MIN_Y);
+    puts("Resize the terminal to continue the game, or exit using 'q'");
 }
 
 

@@ -40,7 +40,8 @@
 typedef enum {
     GAME_RUN,
     GAME_PAUSED,
-    GAME_OVER
+    GAME_OVER,
+    GAME_INVALID
 } gameState_t;
 
 /** The data structure holding data specifically related to the game task */
@@ -66,6 +67,9 @@ typedef struct {
     char field [FIELD_X][FIELD_Y];
     /** The origin point (top left) of the game playing field */
     int fieldOriginX, fieldOriginY;
+
+    /** The current size of the terminal */
+    int termX, termY;
 
     /** The tiles of the currently falling block, specified as an array of XY coord pairs, with the first tile being the origin of rotation */
     block_t block;
@@ -109,6 +113,9 @@ void game_updatePaused(programData_t * data, gameData_t * gameData);
 /** Update function containing the GAME_OVER state logic */
 void game_updateOver(programData_t * data, gameData_t * gameData);
 
+/** Update function containing the GAME_INVALID state logic, for invalid terminal size (or general error state) */
+void game_updateInvalid(programData_t * data, gameData_t * gameData);
+
 
 /* --- Render Functions --- */
 
@@ -123,6 +130,9 @@ void game_renderPaused(programData_t data, gameData_t gameData);
 
 /** Render function containing specific separate GAME_OVER state draw calls */
 void game_renderOver(programData_t data, gameData_t gameData);
+
+/** Render function containing GAME_INVALID state draw calls, for invalid terminal size */
+void game_renderInvalid(programData_t data, gameData_t gameData);
 
 
 /* --- Other Functions --- */
