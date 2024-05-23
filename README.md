@@ -8,14 +8,16 @@ The game is developed in pure C, using only the Linux C standard library, and is
 
 The game is still work in progress, and while a working demo is available, everything is still subject to change.
 
-To try out the demo, clone the repository on a Linux machine with *gcc* and *make* installed, and execute *make run* in a sufficiently large terminal.
+To try out the demo, clone the repository on a Linux machine with *gcc* and *make* installed, download the 'terminal_gui' submodule using `git submodule init` and `git submodule update` and execute `make run` in a sufficiently large (>=48x24) terminal.
 
 ## Development Roadmap
 
 **Features**:
 - Better + dynamic GUI, including dialogs instead of key presses
+- Next block display
 - Code refactoring
 - Line clear animations
 
 **Fixes**:
-- TBD
+- Flicker on some devices possibly, option to reduce UPS to combat flicker
+- Command line option to disable color mode for colorless terminals
