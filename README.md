@@ -13,7 +13,7 @@ To try out the demo, clone the repository on a Linux machine with *gcc* and *mak
 Features to work on:
 - ~~Pause menu~~
 - ~~Gameplay speeding up~~
-- Score for dropping block/better score system
+- ~~Score for dropping block/better score system~~
 - Spacebar to drop block
 - Block drop visual guide
 - Line clear animations

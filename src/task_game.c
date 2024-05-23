@@ -92,8 +92,10 @@ void game_updateRun(programData_t * data, gameData_t * gameData) {
                 game_moveBlock(&gameData->block, -1, 0, gameData->field, 0);
                 moved = 1;
             } else if(gameData->keyBuffer[2] == (char)(66)) {
-                game_moveBlock(&gameData->block, 0, 1, gameData->field, 0);
+                short dropped = game_moveBlock(&gameData->block, 0, 1, gameData->field, 0);
                 moved = 1;
+                if(dropped)
+                    gameData->score += 1 + 5 * ((gameData->defaultFallDelay / gameData->fallDelay) - 1);
             }
 
             /* Slow down place timer if block moved in any direction */
@@ -165,7 +167,7 @@ void game_updateRun(programData_t * data, gameData_t * gameData) {
 
     /* Adding score if lines cleared in the frame */
     if(lineClears > 0) {
-        gameData->score += (2*lineClears - 1);
+        gameData->score += 100 * (2*lineClears - 1);
         gameData->fallDelay *= 0.95f - 0.025f * (lineClears - 1);
     }
 }
