@@ -19,5 +19,5 @@ To try out the demo, clone the repository on a Linux machine with *gcc* and *mak
 - Line clear animations
 
 **Fixes**:
-- Flicker on some devices possibly, option to reduce UPS to combat flicker
+- Flicker on some devices possibly due to erasing without buffered render
 - Command line option to disable color mode for colorless terminals
