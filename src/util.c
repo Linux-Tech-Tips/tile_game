@@ -7,7 +7,7 @@ void keys_processBuffer(char * keyBuffer, keys_t * keys) {
     /* Clearing all keys to false before processing the frame's keyBuffer */
     *keys = (const keys_t){0};
 
-    for(int idx = 0; idx < strlen(keyBuffer); ++idx) {
+    for(size_t idx = 0; idx < strlen(keyBuffer); ++idx) {
         /* Switching the correct key property according to the key buffer */
         switch(keyBuffer[idx]) {
             /* Chars 1 */
