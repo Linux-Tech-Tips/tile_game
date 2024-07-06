@@ -17,6 +17,7 @@
 #include "terminal_gui/terminal_f.h"
 
 #include "data.h"
+#include "util.h"
 #include "block.h"
 
 
@@ -57,8 +58,8 @@ typedef struct {
 
     /** Variable storing whether any keyboard input read in the last frame */
     short keyIn;
-    /** Variable storing the keyboard input buffer read in the last frame */
-    char keyBuffer [TASK_GAME_KEYS];
+    /** Variable storing the keyboard inputs processed in the last frame */
+    keys_t keys;
 
     /** The current score of the game */
     int score;

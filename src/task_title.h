@@ -11,6 +11,7 @@
 #include "terminal_gui/terminal_f.h"
 
 #include "data.h"
+#include "util.h"
 
 /** Updates-per-second rate for the TASK_TITLE task */
 #define TASK_TITLE_UPS 10

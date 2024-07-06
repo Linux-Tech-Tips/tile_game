@@ -32,13 +32,15 @@ nextTask_t title_task(programData_t * data) {
 
         /* Processing keyboard input */
         if(keyIn) {
+            keys_t keys;
+            keys_processBuffer(readBuffer, &keys);
 
-            if(strchr(readBuffer, 'q') != NULL) {
+            if(keys.KEY_Q) {
                 result = TASK_EXIT;
                 titleRun = 0;
             }
 
-            if(strchr(readBuffer, 'p') != NULL && validTerm) {
+            if(keys.KEY_P && validTerm) {
                 result = TASK_GAME;
                 titleRun = 0;
             }
