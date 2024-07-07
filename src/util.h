@@ -59,6 +59,10 @@ typedef struct {
 } keys_t;
 
 /** Processes all keystrokes recorded as characters in keyBuffer into the passed keys structure */
-void keys_processBuffer(char * keyBuffer, keys_t * keys);
+void keys_processBuffer(char * keyBuffer, size_t numKeys, keys_t * keys);
+
+
+/** returns the maximum of two given integers */
+int util_maxInt(int a, int b);
 
 #endif /* TG_UTIL_H */

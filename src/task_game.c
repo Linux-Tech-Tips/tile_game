@@ -55,9 +55,9 @@ void game_update(programData_t * data, gameData_t * gameData) {
     }
 
     /* Reading keyboard input - up to TASK_GAME_KEYS characters per frame */
-    char keyBuffer [TASK_GAME_KEYS];
+    char keyBuffer [TASK_GAME_KEYS] = {0};
     gameData->keyIn = nbRead(keyBuffer, TASK_GAME_KEYS);
-    keys_processBuffer(keyBuffer, &gameData->keys);
+    keys_processBuffer(keyBuffer, TASK_GAME_KEYS, &gameData->keys);
 
     /* Updating state-specific logic based on current state */
     switch(gameData->gameState) {

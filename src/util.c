@@ -2,12 +2,12 @@
 
 /* === KEYBOARD IO === */
 
-void keys_processBuffer(char * keyBuffer, keys_t * keys) {
+void keys_processBuffer(char * keyBuffer, size_t numKeys, keys_t * keys) {
 
     /* Clearing all keys to false before processing the frame's keyBuffer */
     *keys = (const keys_t){0};
 
-    for(size_t idx = 0; idx < strlen(keyBuffer); ++idx) {
+    for(size_t idx = 0; idx < numKeys; ++idx) {
         /* Switching the correct key property according to the key buffer */
         switch(keyBuffer[idx]) {
             /* Chars 1 */
@@ -123,10 +123,10 @@ void keys_processBuffer(char * keyBuffer, keys_t * keys) {
             /* Escape-based keys */
             case (char)(27):
                 /* 91 '[' is the character following ESC for general-purpose escape codes, like the arrow keys, del, home, pgup/pgdn etc. */
-                if((idx+1) < strlen(keyBuffer) && keyBuffer[idx+1] == (char)(91)) {
+                if((idx+1) < numKeys && keyBuffer[idx+1] == (char)(91)) {
                     ++idx;
                     /* Ensuring no out-of-bounds read */
-                    if((idx+1) < strlen(keyBuffer)) {
+                    if((idx+1) < numKeys) {
                         switch((int)keyBuffer[idx+1]) {
                             case 65:
                                 keys->KEY_ARROW_UP = 1;
@@ -149,7 +149,7 @@ void keys_processBuffer(char * keyBuffer, keys_t * keys) {
                         }
                     }
                 /* 79 'O' is the character following ESC for some F keys (locally F1-F4), capturing to not trigger ESC */
-                } else if((idx+1) < strlen(keyBuffer) && keyBuffer[idx+1] == (char)(79)) {
+                } else if((idx+1) < numKeys && keyBuffer[idx+1] == (char)(79)) {
                     ++idx;
                 } else {
                     /* NOTE: This can still lead to a false trigger of ESC, if an escape-based key is pressed 
@@ -175,4 +175,9 @@ void keys_processBuffer(char * keyBuffer, keys_t * keys) {
                 break;
         }
     }
+}
+
+
+int util_maxInt(int a, int b) {
+    return (a > b ? a : b);
 }

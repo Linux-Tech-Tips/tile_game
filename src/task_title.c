@@ -33,7 +33,7 @@ nextTask_t title_task(programData_t * data) {
         /* Processing keyboard input */
         if(keyIn) {
             keys_t keys;
-            keys_processBuffer(readBuffer, &keys);
+            keys_processBuffer(readBuffer, TASK_TITLE_KEYS, &keys);
 
             if(keys.KEY_Q) {
                 result = TASK_EXIT;
