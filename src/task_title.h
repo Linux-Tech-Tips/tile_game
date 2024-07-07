@@ -12,6 +12,7 @@
 
 #include "data.h"
 #include "util.h"
+#include "gui_dialog.h"
 
 /** Updates-per-second rate for the TASK_TITLE task */
 #define TASK_TITLE_UPS 10

@@ -7,6 +7,15 @@ nextTask_t title_task(programData_t * data) {
     short titleRun = 1;
     short validTerm = 1;
 
+    gui_dialog_t menu;
+    gui_createDialog(&menu, "MAIN MENU\nTEST DIALOG", "THIS IS A GUI DIALOG TEST\nTESTING THE DIALOG MODULE", GUI_SIZE_AUTO, GUI_SIZE_AUTO, BUTTON_LINE);
+
+    int b_opt1 = gui_addButton(&menu, "    OPTION 1    \nPRESS TO TRIGGER");
+    int b_opt2 = gui_addButton(&menu, "    OPTION 2    ");
+    int b_opt3 = gui_addButton(&menu, "    OPTION 3    ");
+
+    short printB1 = 0;
+
     /* Title Task Loop */
     while(titleRun && data->run) {
 
@@ -45,7 +54,13 @@ nextTask_t title_task(programData_t * data) {
                 titleRun = 0;
             }
 
+            /* Updating dialog */
+            int pressed = gui_update(&menu, keys);
+            if(pressed == b_opt1) {
+                printB1 = !printB1;
+            }
         }
+
 
 
         /* --- Render Component --- */
@@ -69,10 +84,19 @@ nextTask_t title_task(programData_t * data) {
                 printf("(%d) ", (int)readBuffer[i]);
             }
             puts(";");
+            gui_render(menu, 10, 10);
+
+            modeReset();
+            putchar('\n');
+            if(printB1) {
+                puts("BUTTON 1 TRIGGER");
+            }
+            
         } else {
             printf("Your current Terminal size (%dx%d) is unsupported (min %dx%d).\n", x, y, TERM_MIN_X, TERM_MIN_Y);
             puts("Please resize your terminal to continue");
         }
+
         
         /* Ending frame time measurement, sleeping to match desired updates per second */
         data_frameEnd(data, TASK_TITLE_UPS);
@@ -80,5 +104,6 @@ nextTask_t title_task(programData_t * data) {
 
 
     /* Title Task Termination */
+    gui_destroyDialog(&menu);
     return result;
 }
