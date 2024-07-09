@@ -58,6 +58,8 @@ typedef struct {
     char * title;
     /** The color of the title text */
     int titleColor;
+    /** The background color of the title section of the dialog */
+    int titleBackground;
     /** Currently allocated space for the title text */
     size_t titleSpace;
 
@@ -100,7 +102,7 @@ void gui_createDialog(gui_dialog_t * dialog, char const * title, char const * te
 /** Used to initialize a gui_dialog_t structure, adding a title and text of the desired colors, as well as the desired dialog options. 
  * Allocates space for button text strings.
 */
-void gui_createDialog_opt(gui_dialog_t * dialog, char const * title, int titleColor, char const * text, int textColor, 
+void gui_createDialog_opt(gui_dialog_t * dialog, char const * title, int titleColor, int titleBackground, char const * text, int textColor, 
                             int buttonBackground, int activeButtonBackground, int buttonTextColor, int dialogBackground, 
                             int buttonLayout, int sizeX, int sizeY);
 
@@ -111,7 +113,7 @@ void gui_destroyDialog(gui_dialog_t * dialog);
 void gui_setContent(gui_dialog_t * dialog, char const * title, char const * text);
 
 /** Sets the GUI dialog options, including colors */
-void gui_setOptions(gui_dialog_t * dialog, int dialogBackground, int titleColor, int textColor, 
+void gui_setOptions(gui_dialog_t * dialog, int dialogBackground, int titleColor, int titleBackground, int textColor, 
                     int buttonBackground, int activeButtonBackground, int buttonTextColor, 
                     int sizeX, int sizeY);
 

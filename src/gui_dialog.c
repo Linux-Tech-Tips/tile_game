@@ -2,17 +2,17 @@
 
 void gui_createDialog(gui_dialog_t * dialog, char const * title, char const * text, int sizeX, int sizeY, int buttonLayout) {
 
-    gui_createDialog_opt(dialog, title, COLOR_WHITE, text, COLOR_WHITE, 
+    gui_createDialog_opt(dialog, title, COLOR_WHITE, COLOR_CYAN, text, COLOR_WHITE, 
                             COLOR_MAGENTA, COLOR_RED, COLOR_CYAN, COLOR_BLUE, 
                             buttonLayout, sizeX, sizeY);
 }
 
-void gui_createDialog_opt(gui_dialog_t * dialog, char const * title, int titleColor, char const * text, int textColor, 
+void gui_createDialog_opt(gui_dialog_t * dialog, char const * title, int titleColor, int titleBackground, char const * text, int textColor, 
                             int buttonBackground, int activeButtonBackground, int buttonTextColor, int dialogBackground, 
                             int buttonLayout, int sizeX, int sizeY) {
 
     /* Setting options */
-    gui_setOptions(dialog, dialogBackground, titleColor, textColor, 
+    gui_setOptions(dialog, dialogBackground, titleColor, titleBackground, textColor, 
                     buttonBackground, activeButtonBackground, buttonTextColor, 
                     sizeX, sizeY);
 
@@ -50,13 +50,14 @@ void gui_destroyDialog(gui_dialog_t * dialog) {
 }
 
 
-void gui_setOptions(gui_dialog_t * dialog, int dialogBackground, int titleColor, int textColor, 
+void gui_setOptions(gui_dialog_t * dialog, int dialogBackground, int titleColor, int titleBackground, int textColor, 
                     int buttonBackground, int activeButtonBackground, int buttonTextColor, 
                     int sizeX, int sizeY) {
     
     /* Setting colors */
     dialog->background = dialogBackground;
     dialog->titleColor = titleColor;
+    dialog->titleBackground = titleBackground;
     dialog->textColor = textColor;
     dialog->buttonBackground = buttonBackground;
     dialog->buttonActiveBackground = activeButtonBackground;
@@ -174,7 +175,7 @@ void gui_render(gui_dialog_t dialog, int posX, int posY) {
     /* Printing title if exists */
     if(dialog.title[0] != '\0') {
         cursorMoveTo(posX, posY);
-        _gui_printLines(dialog.title, dialog.titleColor, dialog.background, dialog.background, &cursorRelX, &cursorRelY, posX, posY, dialog.realWidth, dialog.realHeight, 1);
+        _gui_printLines(dialog.title, dialog.titleColor, dialog.titleBackground, dialog.titleBackground, &cursorRelX, &cursorRelY, posX, posY, dialog.realWidth, dialog.realHeight, 1);
     }
 
     /* Printing empty line separator */
