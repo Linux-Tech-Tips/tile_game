@@ -38,3 +38,9 @@ void data_frameEnd(programData_t * data, int ups) {
 double data_timeToSec(struct timespec time) {
     return (double)(time.tv_sec) + (time.tv_nsec/1000000000.0L);
 }
+
+short data_validTerm(void) {
+    int x = 0, y = 0;
+    getTerminalSize(&x, &y);
+    return (x >= TERM_MIN_X && y >= TERM_MIN_Y);
+}

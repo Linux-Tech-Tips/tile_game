@@ -10,10 +10,14 @@
 #ifndef PROGRAM_DATA_H
 #define PROGRAM_DATA_H
 
+/** Minimum terminal width for the game to work */
 #define TERM_MIN_X 48
+/** Minimum terminal height for the game to work */
 #define TERM_MIN_Y 24
 
 #include <time.h>
+
+#include "terminal_gui/terminal_f.h"
 
 
 /* === Data Structures and Constants === */
@@ -27,7 +31,7 @@ typedef struct {
     /** The highest achieved score */
     int highScore;
 
-    /* TODO Next up, things like settings should be here as well, possibly key bindings if added later on */
+    /* TODO Next up, things like settings could be here as well */
 
     struct timespec prevTime;
     double deltaTime;
@@ -61,5 +65,10 @@ void data_frameEnd(programData_t * data, int ups);
 
 /** Utility function to convert the C library timespec structure into precise seconds, saved as a double */
 double data_timeToSec(struct timespec time);
+
+/** Utility function to validate the current terminal size against the required MIN size 
+ * @returns whether the current terminal is valid (1) or not (0)
+*/
+short data_validTerm(void);
 
 #endif /* PROGRAM_DATA_H */

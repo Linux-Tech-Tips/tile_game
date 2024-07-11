@@ -181,3 +181,11 @@ void keys_processBuffer(char * keyBuffer, size_t numKeys, keys_t * keys) {
 int util_maxInt(int a, int b) {
     return (a > b ? a : b);
 }
+
+int util_center(int objSize, int totalSize) {
+    /* Return 1 if object doesn't fit */
+    if(objSize > totalSize)
+        return 1;
+    /* Return the approximate center position, the 1 is an offset to make the result 1-indexed */
+    return (totalSize / 2) - (objSize / 2) + 1;
+}

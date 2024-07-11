@@ -65,4 +65,9 @@ void keys_processBuffer(char * keyBuffer, size_t numKeys, keys_t * keys);
 /** returns the maximum of two given integers */
 int util_maxInt(int a, int b);
 
+/** Centers an object on a particular axis, given its size and the size of the axis. 
+ * The function works with 1-indexed Integer values, as it's intended to use with terminals.
+*/
+int util_center(int objSize, int totalSize);
+
 #endif /* TG_UTIL_H */
