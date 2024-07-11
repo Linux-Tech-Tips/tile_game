@@ -3,100 +3,21 @@
 nextTask_t title_task(programData_t * data) {
 
     /* Title Task Initialization */
-    nextTask_t result;
-    short titleRun = 1;
-    short validTerm = 1;
-
-    gui_dialog_t menu;
-    gui_createDialog(&menu, "MAIN MENU\nTEST DIALOG", "THIS IS A GUI DIALOG TEST\nTESTING THE DIALOG MODULE", GUI_SIZE_AUTO, GUI_SIZE_AUTO, BUTTON_LINE);
-
-    int b_opt1 = gui_addButton(&menu, "    OPTION 1    \nPRESS TO TRIGGER");
-    int b_opt2 = gui_addButton(&menu, "    OPTION 2    ");
-    int b_opt3 = gui_addButton(&menu, "    OPTION 3    ");
-
-    short printB1 = 0;
+    titleData_t titleData = {0};
+    title_init(&titleData);
 
     /* Title Task Loop */
-    while(titleRun && data->run) {
+    while(titleData.titleRun && data->run) {
 
         /* Starting frame time measurement */
         data_frameStart(data);
 
-
-        /* --- Update Component --- */
-
-        /* Reading keyboard input - maximum of 4 characters a frame (no more precision required for the Title task) */
-        char readBuffer [TASK_TITLE_KEYS] = {0};
-        short keyIn = nbRead(readBuffer, TASK_TITLE_KEYS);
-
-        /* Validating terminal size */
-        int x = -1, y = -1;
-        getTerminalSize(&x, &y);
-        if(x < TERM_MIN_X || y < TERM_MIN_Y) {
-            if(validTerm)
-                validTerm = 0;
-        } else if(!validTerm) {
-            validTerm = 1;
-        }
-
-        /* Processing keyboard input */
-        if(keyIn) {
-            keys_t keys;
-            keys_processBuffer(readBuffer, TASK_TITLE_KEYS, &keys);
-
-            if(keys.KEY_Q) {
-                result = TASK_EXIT;
-                titleRun = 0;
-            }
-
-            if(keys.KEY_P && validTerm) {
-                result = TASK_GAME;
-                titleRun = 0;
-            }
-
-            /* Updating dialog */
-            int pressed = gui_update(&menu, keys);
-            if(pressed == b_opt1) {
-                printB1 = !printB1;
-            }
-        }
-
-
-
-        /* --- Render Component --- */
-
-        modeReset();
-        erase();
-        cursorHome();
-        printf("Current delta time is: %lf\n", data->deltaTime);
-        printf("Current FPS is: %.2f\n", (float)(1.0/data->deltaTime));
-
-        if(validTerm) {
-            cursorMoveBy(RIGHT, 20);
-            puts("TETRGS Title Screen");
-            cursorMoveBy(RIGHT, 20);
-            puts(" - Press 'p' to play game");
-            cursorMoveBy(RIGHT, 20);
-            puts(" - Press 'q' to exit");
-            //printf(" - Read characters from stdin: %s\n", readBuffer);
-            printf("\nCharacters read from stdin (as numbers): ");
-            for(int i = 0; i < TASK_TITLE_KEYS; i++) {
-                printf("(%d) ", (int)readBuffer[i]);
-            }
-            puts(";");
-            gui_render(menu, 10, 10);
-
-            modeReset();
-            putchar('\n');
-            if(printB1) {
-                puts("BUTTON 1 TRIGGER");
-            }
-            
-        } else {
-            printf("Your current Terminal size (%dx%d) is unsupported (min %dx%d).\n", x, y, TERM_MIN_X, TERM_MIN_Y);
-            puts("Please resize your terminal to continue");
-        }
-
+        title_update(data, &titleData);
+        title_render(*data, titleData);
+        
+        /* Resetting force reload after rendered */
+        if(titleData.screenReload)
+            titleData.screenReload = 0;
         
         /* Ending frame time measurement, sleeping to match desired updates per second */
         data_frameEnd(data, TASK_TITLE_UPS);
@@ -104,6 +25,203 @@ nextTask_t title_task(programData_t * data) {
 
 
     /* Title Task Termination */
-    gui_destroyDialog(&menu);
+    nextTask_t result = titleData.nextTask;
+    title_destroy(&titleData);
     return result;
+}
+
+void title_init(titleData_t * data) {
+    
+    /* Misc data */
+    data->titleRun = 1;
+    data->nextTask = TASK_EXIT;
+    data->validTerminal = 1;
+    data->fpsCounter = 0;
+    /* Force screen reload when screen started */
+    data->screenReload = 1;
+
+    /* Initializing terminal information */
+    getTerminalSize(&data->termX, &data->termY);
+    data->terminalResized = 0;
+    
+    /* GUI creation */
+    gui_createDialog_opt(&data->menu, "", NO_CODE, NO_CODE, 
+                            "Thank you for playing Tile Game!", COLOR_WHITE,
+                            COLOR_BLUE, COLOR_CYAN, COLOR_RED, COLOR_BLACK,
+                            BUTTON_BREAK, GUI_SIZE_AUTO, GUI_SIZE_AUTO);
+    data->bPlay = gui_addButton(&data->menu, "          === PLAY ===          ");
+    data->bOptions = gui_addButton(&data->menu, "         === OPTIONS ===        ");
+    data->bQuit = gui_addButton(&data->menu, "          === QUIT ===          ");
+}
+
+void title_destroy(titleData_t * data) {
+    gui_destroyDialog(&data->menu);
+}
+
+void title_update(programData_t * data, titleData_t * titleData) {
+    
+    /* Validating terminal size */
+    titleData->validTerminal = data_validTerm();
+
+    /* Skipping the rest of update if the terminal is invalid - logic not needed */
+    if(!titleData->validTerminal) {
+        titleData->screenReload = 1;
+        return;
+    }
+
+    /* Reading and processing keyboard input */
+    char readBuffer [TASK_TITLE_KEYS] = {0};
+    short keyIn = nbRead(readBuffer, TASK_TITLE_KEYS);
+
+    /* Processing keyboard input */
+    if(keyIn) {
+        keys_t keys;
+        keys_processBuffer(readBuffer, TASK_TITLE_KEYS, &keys);
+
+        if(keys.KEY_Q) {
+            titleData->nextTask = TASK_EXIT;
+            titleData->titleRun = 0;
+        }
+
+        /* Updating dialog */
+        int pressed = gui_update(&titleData->menu, keys);
+        if(pressed == titleData->bPlay) {
+            /* Play game upon request */
+            titleData->nextTask = TASK_GAME;
+            titleData->titleRun = 0;
+
+        } else if(pressed == titleData->bOptions) {
+            /* TODO Implement actual options task later */
+            titleData->fpsCounter = !titleData->fpsCounter;
+            titleData->screenReload = 1;
+
+        } else if(pressed == titleData->bQuit) {
+            /* Exit game upon request */
+            titleData->nextTask = TASK_EXIT;
+            titleData->titleRun = 0;
+        }
+    }
+
+    /* Process terminal size */
+    int newX = 0, newY = 0;
+    getTerminalSize(&newX, &newY);
+    if(newX != titleData->termX || newY != titleData->termY) {
+        titleData->terminalResized = 1;
+        titleData->screenReload = 1;
+        titleData->termX = newX;
+        titleData->termY = newY;
+    } else if(titleData->terminalResized) {
+        titleData->terminalResized = 0;
+    }
+}
+
+void title_render(programData_t data, titleData_t titleData) {
+
+    /* Reset cursor to default position and style */
+    modeReset();
+    cursorHome();
+
+    /* Clearing terminal, but only if reload requested to prevent flickering */
+    if(titleData.screenReload)
+        erase();
+    
+    /* Printing invalid information and skipping the rest if invalid */
+    if(!titleData.validTerminal) {
+        modeSet(STYLE_BOLD, COLOR_WHITE, COLOR_RED);
+        cursorMoveTo(2, 2);
+        printf("UNSUPPORTED TERMINAL SIZE (MINIMUM %dx%d)\nPLEASE RESIZE TO CONTINUE", TERM_MIN_X, TERM_MIN_Y);
+        return;
+    }
+
+    /* Print the FPS counter (if desired) */
+    if(titleData.fpsCounter) {
+        cursorMoveTo(2, 2);
+        printf("Current FPS is: %.2f  ", (float)(1.0f/data.deltaTime));
+    }
+
+    /* Print the Title text */
+    int posY = 4;
+    cursorMoveTo(0, posY);
+    modeSet(STYLE_BOLD, COLOR_CYAN, NO_CODE);
+    /* Choosing title style based on available terminal width */
+    if(titleData.termX < 80) {
+        /* Thinner title text */
+        int posX = util_center(38, titleData.termX);
+        cursorMoveTo(posX, posY++);
+        puts("  _|_|_|_|_|  _|  _|      _|_|_|      ");
+        cursorMoveTo(posX, posY++);
+        puts("      _|      _|  _|      _|          ");
+        cursorMoveTo(posX, posY++);
+        puts("      _|      _|  _|      _|_|        ");
+        cursorMoveTo(posX, posY++);
+        puts("      _|      _|  _|      _|          ");
+        cursorMoveTo(posX, posY++);
+        puts("      _|      _|  _|_|_|  _|_|_|      ");
+        cursorMoveTo(posX, posY++);
+        puts("    ");
+        cursorMoveTo(posX, posY++);
+        puts("  _|_|_|    _|_|    _|      _|  _|_|_|");
+        cursorMoveTo(posX, posY++);
+        puts("_|        _|    _|  _|_|  _|_|  _|    ");
+        cursorMoveTo(posX, posY++);
+        puts("_|  _|_|  _|_|_|_|  _|  _|  _|  _|_|  ");
+        cursorMoveTo(posX, posY++);
+        puts("_|    _|  _|    _|  _|      _|  _|    ");
+        cursorMoveTo(posX, posY++);
+        puts("  _|_|_|  _|    _|  _|      _|  _|_|_|");
+
+    } else {
+        /* Wider title text */
+        int posX = util_center(74, titleData.termX);
+        cursorMoveTo(posX, posY++);
+        puts(" _|_|_|_|_|  _|_|_|  _|_|    _|      _|  _|  _|      _|    _|_|    _|    ");
+        cursorMoveTo(posX, posY++);
+        puts("     _|      _|      _|  _|  _|_|  _|_|  _|  _|_|    _|  _|    _|  _|    ");
+        cursorMoveTo(posX, posY++);
+        puts("     _|      _|_|    _|_|    _|  _|  _|  _|  _|  _|  _|  _|_|_|_|  _|    ");
+        cursorMoveTo(posX, posY++);
+        puts("     _|      _|      _|  _|  _|      _|  _|  _|    _|_|  _|    _|  _|    ");
+        cursorMoveTo(posX, posY++);
+        puts("     _|      _|_|_|  _|  _|  _|      _|  _|  _|      _|  _|    _|  _|_|_|");
+        cursorMoveTo(posX, posY++);
+        puts("    \n");
+        cursorMoveTo(posX, posY++);
+        puts("_|_|_|_|_|  _|  _|      _|_|_|        _|_|_|    _|_|    _|      _|  _|_|_|");
+        cursorMoveTo(posX, posY++);
+        puts("    _|      _|  _|      _|          _|        _|    _|  _|_|  _|_|  _|    ");
+        cursorMoveTo(posX, posY++);
+        puts("    _|      _|  _|      _|_|        _|  _|_|  _|_|_|_|  _|  _|  _|  _|_|  ");
+        cursorMoveTo(posX, posY++);
+        puts("    _|      _|  _|      _|          _|    _|  _|    _|  _|      _|  _|    ");
+        cursorMoveTo(posX, posY++);
+        puts("    _|      _|  _|_|_|  _|_|_|        _|_|_|  _|    _|  _|      _|  _|_|_|");
+
+    }
+
+    /* Print GUI under */
+    int guiX = util_center(titleData.menu.realWidth, titleData.termX);
+    gui_render(titleData.menu, guiX, posY);
+
+
+    /* Print top of the border */
+    modeSet(NO_CODE, COLOR_WHITE, COLOR_CYAN);
+    cursorMoveTo(1, 1);
+    for(int x = 0; x < titleData.termX; ++x) {
+        putchar('#');
+    }
+
+    /* Printing sides of the border */
+    for(int y = 0; y < titleData.termY; ++y) {
+        cursorMoveTo(1, y);
+        putchar('#');
+        cursorMoveTo(titleData.termX, y);
+        putchar('#');
+    }
+
+    /* Print bottom of the border */
+    cursorMoveTo(1, titleData.termY);
+    for(int x = 0; x < titleData.termX; ++x) {
+        putchar('#');
+    }
+
 }

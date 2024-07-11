@@ -26,7 +26,7 @@
 /** The width of the playing field */
 #define FIELD_X 10
 /** The height of the playing field */
-#define FIELD_Y 20
+#define FIELD_Y 21
 
 /** The x coordinate of any newly created block */
 #define GAME_NEW_BLOCK_X 4
@@ -38,10 +38,15 @@
 /** The number of keyboard inputs read in one update of the TASK_GAME task */
 #define TASK_GAME_KEYS 3
 
+/** Enumeration describing the current state of the game */
 typedef enum {
+    /** The game is running */
     GAME_RUN,
+    /** The game is paused */
     GAME_PAUSED,
+    /** The game has ended */
     GAME_OVER,
+    /** The terminal size is invalid and the game can't continue */
     GAME_INVALID
 } gameState_t;
 
