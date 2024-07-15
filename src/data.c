@@ -1,15 +1,46 @@
 #include "data.h"
 
 void data_load(programData_t * data, char const * fileName) {
-    data->run = 1;
-    clock_gettime(CLOCK_MONOTONIC, &(data->prevTime));
+
+    /* Open file for binary read */
+    FILE * file = fopen(fileName, "rb");
+
+    if(file) {
+        /* Read bytes from file into programData */
+        int num = fread((void *)(data), sizeof(programData_t), 1, file);
+        /* End function here if successfully read */
+        if(num > 0) {
+            /* Hard-setting certain values */
+            data->run = 1;
+            clock_gettime(CLOCK_MONOTONIC, &(data->prevTime));
+            /* Closing file and ending function */
+            fclose(file);
+            return;
+        }
+        /* Print error message and close file if opened but couldn't read */
+        fputs("Error Reading Game Data!", stderr);
+        fclose(file);
+    }
     
-    /* TODO STUB, Implement actual function later */
+    /* Set data defaults if not loaded correctly */
     data_reset(data);
 }
 
 void data_save(programData_t data, char const * fileName) {
-    /* TODO STUB, Implement function later */
+
+    /* Open file for binary write */
+    FILE * file = fopen(fileName, "wb");
+
+    int num = 0;
+    if(file) {
+        /* Write data into file */
+        num = fwrite((void *)(&data), sizeof(programData_t), 1, file);
+    }
+
+    /* Print error message if data not saved */
+    if(num < 1) {
+        fputs("Error Writing Game Data!", stderr);
+    }
 }
 
 void data_reset(programData_t * data) {

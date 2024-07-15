@@ -39,7 +39,7 @@ int main(int argc, char * argv []) {
 
     /* Task-independent data declaration and initialization */
     programData_t data = {0};
-    data_load(&data, ".game_data");
+    data_load(&data, SAVE_FILE_NAME);
     /* Attaching the data.run program data variable to the static global signal processing variable */
     signalRun = &(data.run);
 
@@ -80,7 +80,7 @@ int main(int argc, char * argv []) {
     cursorShow();
 
     /* Data termination - saving */
-    data_save(data, ".game_data");
+    data_save(data, SAVE_FILE_NAME);
 
     /* Returning successful exit to shell */
     return 0;

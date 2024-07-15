@@ -21,7 +21,6 @@ To try out the demo, clone the repository on a Linux machine with *gcc* and *mak
 ## Development Roadmap
 
 **Features**:
-- Saving/loading high score and other game configuration
 - Some basic options for demonstration purposes (FPS, game field alignment)
 - Code refactoring
 

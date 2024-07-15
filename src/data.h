@@ -15,6 +15,9 @@
 /** Minimum terminal height for the game to work */
 #define TERM_MIN_Y 28
 
+/** The name of the file to save data to and load data from, used in main */
+#define SAVE_FILE_NAME ".game_data"
+
 #include <time.h>
 
 #include "terminal_gui/terminal_f.h"
