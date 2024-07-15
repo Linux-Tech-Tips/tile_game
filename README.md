@@ -21,13 +21,10 @@ To try out the demo, clone the repository on a Linux machine with *gcc* and *mak
 ## Development Roadmap
 
 **Features**:
-- Better + dynamic GUI, including dialogs instead of key presses
-- High score display, updating and saving/loading
-- Some basic options for demonstration purposes
+- Saving/loading high score and other game configuration
+- Some basic options for demonstration purposes (FPS, game field alignment)
 - Code refactoring
-- Line clear animations
 
 **Fixes**:
-- Flicker on some devices possibly due to erasing without buffered render
 - Command line option to disable color mode for colorless terminals
 - Fix all warnings once release-applicable version done

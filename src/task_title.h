@@ -35,11 +35,8 @@ typedef struct {
     /** Whether the terminal was resized in the last frame */
     short terminalResized;
 
-    /** Whether the screen should be erased and reloaded */
-    short screenReload;
-
-    /** Whether the FPS (Frames Per Second) counter should be printed */
-    short fpsCounter;
+    /** Whether the screen should be erased the next frame */
+    short screenClear;
 
     /** The GUI buttons menu */
     gui_dialog_t menu;

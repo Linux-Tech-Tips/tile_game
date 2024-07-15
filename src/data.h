@@ -13,7 +13,7 @@
 /** Minimum terminal width for the game to work */
 #define TERM_MIN_X 48
 /** Minimum terminal height for the game to work */
-#define TERM_MIN_Y 24
+#define TERM_MIN_Y 28
 
 #include <time.h>
 
@@ -21,6 +21,23 @@
 
 
 /* === Data Structures and Constants === */
+
+/** The various types of alignment on either axis */
+typedef enum {
+    ALIGN_LEFT,
+    ALIGN_RIGHT,
+    ALIGN_CENTER,
+    ALIGN_TOP,
+    ALIGN_BOTTOM
+} _alignment_t;
+
+/** The alignment of the game playing field in the terminal */
+typedef struct {
+    /** Typically expected to be ALIGN_LEFT, ALIGN_RIGHT or ALIGN_CENTER */
+    _alignment_t alignX;
+    /** Typically expected to be ALIGN_TOP, ALIGN_BOTTOM or ALIGN_CENTER */
+    _alignment_t alignY;
+} fieldAlign_t;
 
 /** The data structure containing task-independent general program data */
 typedef struct {
@@ -31,9 +48,16 @@ typedef struct {
     /** The highest achieved score */
     int highScore;
 
-    /* TODO Next up, things like settings could be here as well */
+    /** Whether the FPS (Frames Per Second) counter should be printed */
+    short fpsCounter;
 
+    /** The alignment of the game playing field */
+    fieldAlign_t alignment;
+
+
+    /** The time at any previous point of measurement */
     struct timespec prevTime;
+    /** The time between the last frame and the current one */
     double deltaTime;
 
 } programData_t;
@@ -48,11 +72,14 @@ typedef enum {
 
 /* === Functions === */
 
-/** Loads a programData_t structure from a file with the given name */
+/** Loads a programData_t structure from a file with the given name, or sets default values if file not found */
 void data_load(programData_t * data, char const * fileName);
 
 /** Saves a programData_t structure into a file with the given name */
 void data_save(programData_t data, char const * fileName);
+
+/** Sets a programData_t structure to default values */
+void data_reset(programData_t * data);
 
 
 /** Starts frame time tracking, to be called at the start of frame */

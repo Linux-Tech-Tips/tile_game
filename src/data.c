@@ -5,10 +5,18 @@ void data_load(programData_t * data, char const * fileName) {
     clock_gettime(CLOCK_MONOTONIC, &(data->prevTime));
     
     /* TODO STUB, Implement actual function later */
+    data_reset(data);
 }
 
 void data_save(programData_t data, char const * fileName) {
     /* TODO STUB, Implement function later */
+}
+
+void data_reset(programData_t * data) {
+    data->run = 1;
+    data->highScore = 0;
+    data->fpsCounter = 0;
+    data->alignment = (fieldAlign_t){ALIGN_CENTER, ALIGN_TOP};
 }
 
 

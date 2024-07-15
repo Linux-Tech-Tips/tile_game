@@ -84,6 +84,11 @@ void _block_genTiles(block_t * block, int x1, int y1, int x2, int y2, int x3, in
 /** Draws the desired block to the terminal, with a specifiable custom (top-left) origin point */
 void block_render(block_t block, int originX, int originY);
 
+/** Tests whether any part of the block covers the given position or not 
+ * (relative to the block origin)
+*/
+short block_testPos(block_t block, int posX, int posY);
+
 /** Returns the next blockType_t drawn from the given bag, reshuffles bag if end reached 
  * NOTE: On any error, the function defaults to the T block
 */

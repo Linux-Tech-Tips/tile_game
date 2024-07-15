@@ -4,27 +4,9 @@ nextTask_t game_task(programData_t * data) {
 
     /* Game Task Initialization */
     gameData_t gameData = {0};
-    gameData.gameRun = 1;
-
-    gameData.gameState = GAME_RUN;
-
-    /* TODO Field origin will be defined based on the terminal size, once dynamic UI implemented */
-    gameData.fieldOriginX = 16;
-    gameData.fieldOriginY = 0;
-
-    gameData.defaultFallDelay = 0.5f;
-    gameData.fallDelay = gameData.defaultFallDelay;
-    gameData.fallTimer = gameData.fallDelay;
-
-    gameData.placeDelay = 0.8f;
-    gameData.placeTimer = gameData.placeDelay;
+    game_init(&gameData, data->alignment);
 
     srand(time(NULL));
-
-    /* Generating the initial block */
-    gameData.falling = 1;
-    block_initBag(&gameData.blockBag);
-    _game_genBlock(&gameData, GAME_NEW_BLOCK_X, GAME_NEW_BLOCK_Y);
 
     /* Game Task Loop */
     while(gameData.gameRun && data->run) {
@@ -36,22 +18,108 @@ nextTask_t game_task(programData_t * data) {
         game_update(data, &gameData);
         game_render(*data, gameData);
 
+        /* Resetting screen clear flag if set */
+        if(gameData.screenClear)
+            gameData.screenClear = 0;
+
         /* Ending frame time management, sleeping to keep desired updates per second */
         data_frameEnd(data, TASK_GAME_UPS);
     }
+
+    /* Disposing of the created game task */
+    game_destroy(&gameData);
 
     /* Game Task Termination */
     return gameData.nextTask;
 }
 
 
+void game_init(gameData_t * data, fieldAlign_t alignment) {
+    /* Misc data */
+    data->gameRun = 1;
+    data->nextTask = TASK_TITLE;
+    data->gameState = GAME_RUN;
+    data->keyIn = 0;
+
+    /* Pause menu*/
+    gui_createDialog_opt(&data->pauseMenu, "GAME PAUSED", COLOR_WHITE, COLOR_RED, "", NO_CODE, 
+                            COLOR_BLUE, COLOR_CYAN, COLOR_RED, COLOR_MAGENTA, 
+                            BUTTON_LINE, GUI_SIZE_AUTO, GUI_SIZE_AUTO);
+    data->pauseContinue = gui_addButton(&data->pauseMenu, "CONTINUE");
+    data->pauseRestart = gui_addButton(&data->pauseMenu, "RESTART");
+    data->pauseQuit = gui_addButton(&data->pauseMenu, "QUIT");
+    /* Game over menu */
+    gui_createDialog_opt(&data->overMenu, "GAME OVER", COLOR_WHITE, COLOR_RED, 
+                            "Thanks For Playing!\n - Final Score:         ", COLOR_WHITE, 
+                            COLOR_BLUE, COLOR_CYAN, COLOR_RED, COLOR_MAGENTA,
+                            BUTTON_BREAK, GUI_SIZE_AUTO, GUI_SIZE_AUTO);
+    data->overRestart = gui_addButton(&data->overMenu, "PLAY AGAIN");
+    data->overQuit = gui_addButton(&data->overMenu, "MAIN MENU");
+
+    /* Unmutable gameplay options */
+    getTerminalSize(&(data->termX), &(data->termY));
+    _game_getAlignPos(alignment, &(data->fieldOriginX), &(data->fieldOriginY), data->termX, data->termY);
+    data->defaultFallDelay = GAME_DEFAULT_FALL_DELAY;
+    data->placeDelay = GAME_DEFAULT_PLACE_DELAY;
+    
+    /* Block bag initialization */
+    block_initBag(&data->blockBag);
+
+    /* Reset gameplay data */
+    game_reset(data);
+}
+
+void game_reset(gameData_t * data) {
+    /* Reset game state and timers */
+    data->gameState = GAME_RUN;
+    data->score = 0;
+    data->fallDelay = data->defaultFallDelay;
+    data->fallTimer = data->fallDelay;
+    data->placeTimer = data->placeDelay;
+    data->falling = 1;
+    
+    /* Reset game playing field */
+    for(int x = 0; x < FIELD_X; ++x) {
+        for(int y = 0; y < FIELD_Y; ++y) {
+            data->field[x][y] = 0;
+        }
+    }
+
+    /* Set the game to clear on the next frame */
+    data->screenClear = 1;
+
+    /* Reset dialog buttons */
+    (&data->pauseMenu)->currentButton = 0;
+    (&data->overMenu)->currentButton = 0;
+
+    /* Generate newly falling block */
+    block_shuffleBag(&data->blockBag);
+    _game_genBlock(data, GAME_NEW_BLOCK_X, GAME_NEW_BLOCK_Y);
+}
+
+void game_destroy(gameData_t * data) {
+    gui_destroyDialog(&data->pauseMenu);
+    gui_destroyDialog(&data->overMenu);
+}
+
+
 void game_update(programData_t * data, gameData_t * gameData) {
 
     /* Getting the current frame terminal size */
-    getTerminalSize(&(gameData->termX), &(gameData->termY));
+    int newTermX, newTermY;
+    getTerminalSize(&newTermX, &newTermY);
 
-    if(gameData->gameState != GAME_INVALID && (gameData->termX < TERM_MIN_X || gameData->termY < TERM_MIN_Y)) {
+    /* Clearing screen and updating sizes on resize */
+    if(newTermX != gameData->termX || newTermY != gameData->termY) {
+        gameData->screenClear = 1;
+        gameData->termX = newTermX;
+        gameData->termY = newTermY;
+    }
+
+    /* Checking to make sure terminal dimensions are valid */
+    if(!data_validTerm()) {
         gameData->gameState = GAME_INVALID;
+        gameData->screenClear = 1;
     }
 
     /* Reading keyboard input - up to TASK_GAME_KEYS characters per frame */
@@ -75,6 +143,10 @@ void game_update(programData_t * data, gameData_t * gameData) {
 
         case GAME_INVALID:
             game_updateInvalid(data, gameData);
+        break;
+
+        case GAME_RESTART:
+            game_reset(gameData);
         break;
     }
 
@@ -173,20 +245,32 @@ void game_updateRun(programData_t * data, gameData_t * gameData) {
         gameData->score += 100 * (2*lineClears - 1);
         gameData->fallDelay *= 0.95f - 0.025f * (lineClears - 1);
     }
+
+    /* Checking and updating high score */
+    if(gameData->score > data->highScore)
+        data->highScore = gameData->score;
 }
 
 void game_updatePaused(programData_t * data, gameData_t * gameData) {
     
     if(gameData->keyIn) {
-        /* Unpause logic */
-        if(gameData->keys.KEY_P || gameData->keys.KEY_ESC) {
-            gameData->gameState = GAME_RUN;
-        }
         
-        /* Quit logic */
-        if(gameData->keys.KEY_Q) {
-            gameData->nextTask = TASK_TITLE;
-            gameData->gameRun = 0;
+        int button = gui_update(&gameData->pauseMenu, gameData->keys);
+
+        /* Process GUI dialog buttons */
+        if(button >= 0) {
+            if(button == gameData->pauseContinue) {
+                /* Continue */
+                gameData->gameState = GAME_RUN;
+                gameData->screenClear = 1;
+            } else if(button == gameData->pauseRestart) {
+                /* Restart */
+                gameData->gameState = GAME_RESTART;
+            } else if(button == gameData->pauseQuit) {
+                /* Exit to title */
+                gameData->nextTask = TASK_TITLE;
+                gameData->gameRun = 0;
+            }
         }
     }
 
@@ -194,10 +278,19 @@ void game_updatePaused(programData_t * data, gameData_t * gameData) {
 
 void game_updateOver(programData_t * data, gameData_t * gameData) {
     if(gameData->keyIn) {
-        /* Quit logic */
-        if(gameData->keys.KEY_Q) {
-            gameData->nextTask = TASK_TITLE;
-            gameData->gameRun = 0;
+
+        int button = gui_update(&gameData->overMenu, gameData->keys);
+
+        /* Process GUI buttons */
+        if(button >= 0) {
+            if(button == gameData->overRestart) {
+                /* Play again */
+                gameData->gameState = GAME_RESTART;
+            } else if(button == gameData->overQuit) {
+                /* Exit to title */
+                gameData->nextTask = TASK_TITLE;
+                gameData->gameRun = 0;
+            }
         }
     }
 }
@@ -211,8 +304,9 @@ void game_updateInvalid(programData_t * data, gameData_t * gameData) {
         }
     }
 
-    if(gameData->termX >= TERM_MIN_X && gameData->termY >= TERM_MIN_Y) {
+    if(data_validTerm()) {
         gameData->gameState = GAME_PAUSED;
+        gameData->screenClear = 1;
     }
 
 }
@@ -220,45 +314,30 @@ void game_updateInvalid(programData_t * data, gameData_t * gameData) {
 
 void game_render(programData_t data, gameData_t gameData) {
 
-    /* Resetting and erasing screen before drawing new frame */
+    /* Resetting mode before drawing new frame */
     modeReset();
-    erase();
     cursorHome();
+    
+    /* Clearing screen if requested */
+    if(gameData.screenClear)
+        erase();
 
     /* Drawing general debug information (for now) */
-    puts("DEMO GAME");
-    printf("SCORE: %d\n", gameData.score);
-    printf("dt: %lf\n", data.deltaTime);
+    //puts("DEMO GAME");
+    //printf("SCORE: %d\n", gameData.score);
+    //printf("dt: %lf\n", data.deltaTime);
 
-    /* Drawing the game playing area field */
-    cursorHome();
-    cursorMoveBy(RIGHT, gameData.fieldOriginX);
-    cursorMoveBy(DOWN, gameData.fieldOriginY);
-    modeSet(NO_CODE, COLOR_WHITE, COLOR_BLACK);
-    puts("|====================|");
-    for(short y = 0; y < FIELD_Y; y++) {
-        cursorMoveBy(RIGHT, gameData.fieldOriginX);
-        modeSet(NO_CODE, COLOR_WHITE, COLOR_BLACK);
-        putchar('|');
-        for(short x = 0; x < FIELD_X; x++) {
-            if(gameData.field[x][y] > 0) {
-                modeSet(NO_CODE, COLOR_BLACK, gameData.field[x][y]);
-                fputs("[]", stdout);
-            } else {
-                modeSet(NO_CODE, COLOR_WHITE, COLOR_BLACK);
-                fputs("  ", stdout);
-            }
-        }
-        modeSet(NO_CODE, COLOR_WHITE, COLOR_BLACK);
-        putchar('|');
-        putchar('\n');
+    /* Drawing score and high score */
+    cursorMoveTo(2, 2);
+    printf("SCORE %6d", gameData.score);
+    cursorMoveTo(2, 3);
+    printf("BEST  %6d", data.highScore);
+
+    /* Drawing FPS if requested */
+    if(data.fpsCounter) {
+        cursorMoveTo(2, 4);
+        printf("FPS: %.2f  ", (float)(1.0f/data.deltaTime));
     }
-    cursorMoveBy(RIGHT, gameData.fieldOriginX);
-    puts("|====================|");
-
-    /* Drawing the block (with the origin incremented by 1, which is the origin of the internal part of the field) 
-        NOTE: Here, fieldOriginX is offset by 1 because although the traditional tile has a width of 2, the vertical borders only have a width of 1 */
-    block_render(gameData.block, gameData.fieldOriginX+1, gameData.fieldOriginY+1);
 
     /* Drawing stuff specific to current state */
     switch(gameData.gameState) {
@@ -279,6 +358,27 @@ void game_render(programData_t data, gameData_t gameData) {
         break;
     }
 
+    /* Print top of the border */
+    modeSet(NO_CODE, COLOR_WHITE, COLOR_CYAN);
+    cursorMoveTo(1, 1);
+    for(int x = 0; x < gameData.termX; ++x) {
+        putchar('#');
+    }
+
+    /* Printing sides of the border */
+    for(int y = 0; y < gameData.termY; ++y) {
+        cursorMoveTo(1, y);
+        putchar('#');
+        cursorMoveTo(gameData.termX, y);
+        putchar('#');
+    }
+
+    /* Print bottom of the border */
+    cursorMoveTo(1, gameData.termY);
+    for(int x = 0; x < gameData.termX; ++x) {
+        putchar('#');
+    }
+
     modeReset();
 
     /* Flushing STDOUT at the end of render part of loop to make sure everything renders */
@@ -286,42 +386,78 @@ void game_render(programData_t data, gameData_t gameData) {
 }
 
 void game_renderRun(programData_t data, gameData_t gameData) {
-    /* TODO Put something here if any specific draw calls found */
+    /* NOTE: Playing field draw calls are specific to the RUN state to not interfere with the GUI */
+
+    /* Resetting cursor to field origin */
+    cursorHome();
+    cursorMoveBy(RIGHT, gameData.fieldOriginX);
+    cursorMoveBy(DOWN, gameData.fieldOriginY);
+    
+    /* Drawing top border */
+    modeSet(NO_CODE, COLOR_WHITE, COLOR_BLACK);
+    putchar('|');
+    for(int x = 0; x < FIELD_X; ++x) {
+       fputs("==", stdout);
+    }
+    putchar('|');
+    putchar('\n');
+    
+    /* Drawing field */
+    for(short y = 0; y < FIELD_Y; y++) {
+        cursorMoveBy(RIGHT, gameData.fieldOriginX);
+        modeSet(NO_CODE, COLOR_WHITE, COLOR_BLACK);
+        putchar('|');
+        for(short x = 0; x < FIELD_X; x++) {
+            if(gameData.field[x][y] > 0) {
+                modeSet(NO_CODE, COLOR_BLACK, gameData.field[x][y]);
+                fputs("[]", stdout);
+            } else if(block_testPos(gameData.block, x, y)) {
+                cursorMoveBy(RIGHT, 2);
+            } else {
+                modeSet(NO_CODE, COLOR_WHITE, COLOR_BLACK);
+                fputs("  ", stdout);
+            }
+        }
+        modeSet(NO_CODE, COLOR_WHITE, COLOR_BLACK);
+        putchar('|');
+        putchar('\n');
+    }
+
+    /* Drawing bottom border */
+    cursorMoveBy(RIGHT, gameData.fieldOriginX);
+    putchar('|');
+    for(int x = 0; x < FIELD_X; ++x) {
+        fputs("==", stdout);
+    }
+    putchar('|');
+
+    /* Drawing the block (with the origin incremented by 1, which is the origin of the internal part of the field) 
+        NOTE: Here, fieldOriginX is offset by 1 because although the traditional tile has a width of 2, the vertical borders only have a width of 1 */
+    block_render(gameData.block, gameData.fieldOriginX+1, gameData.fieldOriginY+1);
 }
 
 void game_renderPaused(programData_t data, gameData_t gameData) {
 
     /* Rendering pause menu somewhere approx in the field */    
-    modeSet(NO_CODE, COLOR_BLACK, COLOR_WHITE);
-    cursorHome();
-    cursorMoveBy(RIGHT, 24);
-    cursorMoveBy(DOWN, 8);
-    puts("GAME PAUSED");
-    cursorMoveBy(RIGHT, 24);
-    puts(" - Press ESC or 'p' to continue");
-    cursorMoveBy(RIGHT, 24);
-    puts(" - Press 'q' to quit");
+    int posX = util_center(gameData.pauseMenu.realWidth, gameData.termX);
+    gui_render(gameData.pauseMenu, posX, 6);
 }
 
 void game_renderOver(programData_t data, gameData_t gameData) {
     
     /* Rendering game over dialog */
-    modeSet(NO_CODE, COLOR_BLACK, COLOR_WHITE);
-    cursorHome();
-    cursorMoveBy(RIGHT, 24);
-    cursorMoveBy(DOWN, 8);
-    puts("GAME OVER");
-    cursorMoveBy(RIGHT, 24);
-    puts(" - Press q to quit");
-
+    int posX = util_center(gameData.overMenu.realWidth, gameData.termX);
+    gui_render(gameData.overMenu, posX, 6);
+    cursorMoveTo(posX+17, 9);
+    modeSet(STYLE_BOLD, COLOR_WHITE, gameData.overMenu.background);
+    printf("%6d", gameData.score);
 }
 
 void game_renderInvalid(programData_t data, gameData_t gameData) {
 
     /* Rendering error dialog */
-    modeReset();
-    erase();
-    cursorHome();
+    modeSet(STYLE_BOLD, COLOR_WHITE, COLOR_RED);
+    cursorMoveTo(2, 2);
     printf("The current Terminal size (%dx%d) is invalid (minimum %dx%d).\n", gameData.termX, gameData.termY, TERM_MIN_X, TERM_MIN_Y);
     puts("Resize the terminal to continue the game, or exit using 'q'");
 }
@@ -405,4 +541,41 @@ short _game_placeBlock(gameData_t * data) {
             result = 0;
     }
     return result;
+}
+
+void _game_getAlignPos(fieldAlign_t alignment, int * posX, int * posY, int terminalWidth, int terminalHeight) {
+
+    switch(alignment.alignX) {
+        case ALIGN_LEFT:
+            *posX = 16;
+        break;
+
+        case ALIGN_CENTER:
+            *posX = util_center((FIELD_X*2)+2, terminalWidth);
+        break;
+
+        case ALIGN_RIGHT:
+            *posX = terminalWidth - ((FIELD_X*2)+2) - 16;
+        break;
+
+        default:
+            *posX = 16;
+    }
+
+    switch(alignment.alignY) {
+        case ALIGN_TOP:
+            *posY = 3;
+        break;
+
+        case ALIGN_CENTER:
+            *posY = util_center(FIELD_Y+2, terminalHeight);
+        break;
+
+        case ALIGN_BOTTOM:
+            *posY = terminalHeight - (FIELD_Y+2) - 3;
+            break;
+        
+        default:
+            *posY = 3;
+    }
 }

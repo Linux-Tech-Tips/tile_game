@@ -19,6 +19,7 @@
 #include "data.h"
 #include "util.h"
 #include "block.h"
+#include "gui_dialog.h"
 
 
 /* === Data Structures and Constants === */
@@ -33,6 +34,11 @@
 /** The y coordinate of any newly created block */
 #define GAME_NEW_BLOCK_Y 0
 
+/** The default time it takes the block to fall down 1 step */
+#define GAME_DEFAULT_FALL_DELAY 0.5f
+/** The default time it takes the block to be placed if not falling */
+#define GAME_DEFAULT_PLACE_DELAY 0.8f
+
 /** Updates-per-second rate for the TASK_GAME task */
 #define TASK_GAME_UPS 60
 /** The number of keyboard inputs read in one update of the TASK_GAME task */
@@ -46,6 +52,8 @@ typedef enum {
     GAME_PAUSED,
     /** The game has ended */
     GAME_OVER,
+    /** The game needs to be restarted */
+    GAME_RESTART,
     /** The terminal size is invalid and the game can't continue */
     GAME_INVALID
 } gameState_t;
@@ -61,10 +69,32 @@ typedef struct {
     /** The current state of the game */
     gameState_t gameState;
 
+    /** If set, the screen will be cleared on the next frame (use sparingly to prevent flickering) */
+    short screenClear;
+
+
+    /** The game pause menu dialog */
+    gui_dialog_t pauseMenu;
+    /** The pause menu 'continue' button */
+    int pauseContinue;
+    /** The pause menu 'restart' button */
+    int pauseRestart;
+    /** The pause menu 'quit' button */
+    int pauseQuit;
+
+    /** The game over menu dialog */
+    gui_dialog_t overMenu;
+    /** The game over menu 'restart' button */
+    int overRestart;
+    /** The game over menu 'quit' button */
+    int overQuit;
+
+
     /** Variable storing whether any keyboard input read in the last frame */
     short keyIn;
     /** Variable storing the keyboard inputs processed in the last frame */
     keys_t keys;
+
 
     /** The current score of the game */
     int score;
@@ -103,6 +133,18 @@ typedef struct {
 
 /** The main task function for the Game task */
 nextTask_t game_task(programData_t * data);
+
+
+/* --- Create/Destroy Functions --- */
+
+/** Initializes an empty gameData_t structure with the given parameters */
+void game_init(gameData_t * data, fieldAlign_t alignment);
+
+/** Resets the gameplay data of an existing gameData_t structure */
+void game_reset(gameData_t * data);
+
+/** Destroys a gameData_t structure once it's no longer used */
+void game_destroy(gameData_t * data);
 
 
 /* --- Update Functions --- */
@@ -167,5 +209,8 @@ void _game_genBlock(gameData_t * data, int startX, int startY);
  * @returns 1 if the block was placed correctly, 0 if not
 */
 short _game_placeBlock(gameData_t * data);
+
+/** Saves the X and Y origin of a game playing field to posX and posY */
+void _game_getAlignPos(fieldAlign_t alignment, int * posX, int * posY, int terminalWidth, int terminalHeight);
 
 #endif /* TASK_GAME_H */

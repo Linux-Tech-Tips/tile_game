@@ -16,8 +16,8 @@ nextTask_t title_task(programData_t * data) {
         title_render(*data, titleData);
         
         /* Resetting force reload after rendered */
-        if(titleData.screenReload)
-            titleData.screenReload = 0;
+        if(titleData.screenClear)
+            titleData.screenClear = 0;
         
         /* Ending frame time measurement, sleeping to match desired updates per second */
         data_frameEnd(data, TASK_TITLE_UPS);
@@ -36,9 +36,8 @@ void title_init(titleData_t * data) {
     data->titleRun = 1;
     data->nextTask = TASK_EXIT;
     data->validTerminal = 1;
-    data->fpsCounter = 0;
     /* Force screen reload when screen started */
-    data->screenReload = 1;
+    data->screenClear = 1;
 
     /* Initializing terminal information */
     getTerminalSize(&data->termX, &data->termY);
@@ -65,7 +64,7 @@ void title_update(programData_t * data, titleData_t * titleData) {
 
     /* Skipping the rest of update if the terminal is invalid - logic not needed */
     if(!titleData->validTerminal) {
-        titleData->screenReload = 1;
+        titleData->screenClear = 1;
         return;
     }
 
@@ -92,8 +91,8 @@ void title_update(programData_t * data, titleData_t * titleData) {
 
         } else if(pressed == titleData->bOptions) {
             /* TODO Implement actual options task later */
-            titleData->fpsCounter = !titleData->fpsCounter;
-            titleData->screenReload = 1;
+            data->fpsCounter = !data->fpsCounter;
+            titleData->screenClear = 1;
 
         } else if(pressed == titleData->bQuit) {
             /* Exit game upon request */
@@ -107,7 +106,7 @@ void title_update(programData_t * data, titleData_t * titleData) {
     getTerminalSize(&newX, &newY);
     if(newX != titleData->termX || newY != titleData->termY) {
         titleData->terminalResized = 1;
-        titleData->screenReload = 1;
+        titleData->screenClear = 1;
         titleData->termX = newX;
         titleData->termY = newY;
     } else if(titleData->terminalResized) {
@@ -122,7 +121,7 @@ void title_render(programData_t data, titleData_t titleData) {
     cursorHome();
 
     /* Clearing terminal, but only if reload requested to prevent flickering */
-    if(titleData.screenReload)
+    if(titleData.screenClear)
         erase();
     
     /* Printing invalid information and skipping the rest if invalid */
@@ -134,9 +133,9 @@ void title_render(programData_t data, titleData_t titleData) {
     }
 
     /* Print the FPS counter (if desired) */
-    if(titleData.fpsCounter) {
+    if(data.fpsCounter) {
         cursorMoveTo(2, 2);
-        printf("Current FPS is: %.2f  ", (float)(1.0f/data.deltaTime));
+        printf("FPS: %.2f  ", (float)(1.0f/data.deltaTime));
     }
 
     /* Print the Title text */

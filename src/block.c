@@ -69,7 +69,7 @@ void _block_genTiles(block_t * block, int x1, int y1, int x2, int y2, int x3, in
 
 void block_render(block_t block, int originX, int originY) {
     /* Going through all tiles in the block */
-    for(short i = 0; i < BLOCK_SIZE; i++) {
+    for(short i = 0; i < BLOCK_SIZE; ++i) {
         /* Start by moving to the specified origin point (and converting 0-indexed origin into 1-indexed terminal coords) */
         cursorMoveTo(originX+1, originY+1);
         
@@ -81,6 +81,15 @@ void block_render(block_t block, int originX, int originY) {
         puts("[]");
     }
 }
+
+short block_testPos(block_t block, int posX, int posY) {
+    for(short i = 0; i < BLOCK_SIZE; ++i) {
+        if(posX == block.tiles[i][0] && posY == block.tiles[i][1])
+            return 1;
+    }
+    return 0;
+}
+
 
 blockType_t block_getNext(bag_t * bag) {
     /* Reshuffling if index reached out of bounds */
