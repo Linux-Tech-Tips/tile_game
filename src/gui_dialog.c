@@ -160,7 +160,7 @@ int gui_update(gui_dialog_t * dialog, keys_t keys) {
     return -1;
 }
 
-void gui_render(gui_dialog_t dialog, int posX, int posY) {
+void gui_render(gui_dialog_t dialog, int posX, int posY, short focused) {
 
     /* Checking if too thin to render anything */
     if(dialog.realWidth < 1 || dialog.realHeight < 1)
@@ -175,7 +175,8 @@ void gui_render(gui_dialog_t dialog, int posX, int posY) {
     /* Printing title if exists */
     if(dialog.title[0] != '\0') {
         cursorMoveTo(posX, posY);
-        _gui_printLines(dialog.title, dialog.titleColor, dialog.titleBackground, dialog.titleBackground, &cursorRelX, &cursorRelY, posX, posY, dialog.realWidth, dialog.realHeight, 1);
+        int background = (focused ? dialog.titleBackground : dialog.background);
+        _gui_printLines(dialog.title, dialog.titleColor, background, background, &cursorRelX, &cursorRelY, posX, posY, dialog.realWidth, dialog.realHeight, 1);
     }
 
     /* Printing empty line separator */
@@ -212,8 +213,8 @@ void gui_render(gui_dialog_t dialog, int posX, int posY) {
             buttonMaxY = (cursorRelY + button.sizeY);
 
         /* Print button content */
-        _gui_printLines(dialog.buttons[idx].text, dialog.buttonTextColor, 
-                        (dialog.currentButton == idx ? dialog.buttonActiveBackground : dialog.buttonBackground), dialog.background,
+        int background = ((dialog.currentButton == idx && focused) ? dialog.buttonBackground : dialog.buttonActiveBackground);
+        _gui_printLines(dialog.buttons[idx].text, dialog.buttonTextColor, background, dialog.background,
                         &cursorRelX, &cursorRelY, posX, posY, dialog.realWidth, dialog.realHeight, 1);
         
         /* Printing empty next line if desired */

@@ -128,8 +128,10 @@ int gui_addButton(gui_dialog_t * dialog, char const * buttonText);
 */
 int gui_update(gui_dialog_t * dialog, keys_t keys);
 
-/** Renders the given GUI dialog to the terminal */
-void gui_render(gui_dialog_t dialog, int posX, int posY);
+/** Renders the given GUI dialog to the given position in the terminal, 
+ * if focus is set to 0, no button shows as selected and the title background changes to the regular background.
+*/
+void gui_render(gui_dialog_t dialog, int posX, int posY, short focused);
 
 
 /** Gets the number of non-null chars in the longest line (separated by '\n') in the given content */

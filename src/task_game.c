@@ -27,10 +27,11 @@ nextTask_t game_task(programData_t * data) {
     }
 
     /* Disposing of the created game task */
+    nextTask_t result = gameData.nextTask;
     game_destroy(&gameData);
 
     /* Game Task Termination */
-    return gameData.nextTask;
+    return result;
 }
 
 
@@ -440,14 +441,14 @@ void game_renderPaused(programData_t data, gameData_t gameData) {
 
     /* Rendering pause menu somewhere approx in the field */    
     int posX = util_center(gameData.pauseMenu.realWidth, gameData.termX);
-    gui_render(gameData.pauseMenu, posX, 6);
+    gui_render(gameData.pauseMenu, posX, 6, 1);
 }
 
 void game_renderOver(programData_t data, gameData_t gameData) {
     
     /* Rendering game over dialog */
     int posX = util_center(gameData.overMenu.realWidth, gameData.termX);
-    gui_render(gameData.overMenu, posX, 6);
+    gui_render(gameData.overMenu, posX, 6, 1);
     cursorMoveTo(posX+17, 9);
     modeSet(STYLE_BOLD, COLOR_WHITE, gameData.overMenu.background);
     printf("%6d", gameData.score);

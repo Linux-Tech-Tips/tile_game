@@ -199,7 +199,7 @@ void title_render(programData_t data, titleData_t titleData) {
 
     /* Print GUI under */
     int guiX = util_center(titleData.menu.realWidth, titleData.termX);
-    gui_render(titleData.menu, guiX, posY);
+    gui_render(titleData.menu, guiX, posY, 1);
 
 
     /* Print top of the border */
