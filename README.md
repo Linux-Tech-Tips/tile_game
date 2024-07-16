@@ -25,5 +25,7 @@ To try out the demo, clone the repository on a Linux machine with *gcc* and *mak
 - Code refactoring
 
 **Fixes**:
+- BUG: First randomizer is always seeded the same, leading to the same order of blocks for the first game
+- BUG: Few rows from the top, unsupported blocks don't fall down properly/aren't cleared properly
 - Command line option to disable color mode for colorless terminals
 - Fix all warnings once release-applicable version done
