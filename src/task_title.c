@@ -90,9 +90,8 @@ void title_update(programData_t * data, titleData_t * titleData) {
             titleData->titleRun = 0;
 
         } else if(pressed == titleData->bOptions) {
-            /* TODO Implement actual options task later */
-            data->fpsCounter = !data->fpsCounter;
-            titleData->screenClear = 1;
+            titleData->nextTask = TASK_OPTIONS;
+            titleData->titleRun = 0;
 
         } else if(pressed == titleData->bQuit) {
             /* Exit game upon request */

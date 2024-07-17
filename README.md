@@ -21,7 +21,7 @@ To try out the demo, clone the repository on a Linux machine with *gcc* and *mak
 ## Development Roadmap
 
 **Features**:
-- Some basic options for demonstration purposes (FPS, game field alignment)
+- Options: RESET DATA extra confirm dialog, to make sure
 - Code refactoring
 
 **Fixes**:

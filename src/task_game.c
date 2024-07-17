@@ -58,8 +58,6 @@ void game_init(gameData_t * data, fieldAlign_t alignment) {
     data->overQuit = gui_addButton(&data->overMenu, "MAIN MENU");
 
     /* Unmutable gameplay options */
-    getTerminalSize(&(data->termX), &(data->termY));
-    _game_getAlignPos(alignment, &(data->fieldOriginX), &(data->fieldOriginY), data->termX, data->termY);
     data->defaultFallDelay = GAME_DEFAULT_FALL_DELAY;
     data->placeDelay = GAME_DEFAULT_PLACE_DELAY;
     
@@ -67,10 +65,10 @@ void game_init(gameData_t * data, fieldAlign_t alignment) {
     block_initBag(&data->blockBag);
 
     /* Reset gameplay data */
-    game_reset(data);
+    game_reset(data, alignment);
 }
 
-void game_reset(gameData_t * data) {
+void game_reset(gameData_t * data, fieldAlign_t alignment) {
     /* Reset game state and timers */
     data->gameState = GAME_RUN;
     data->score = 0;
@@ -92,6 +90,10 @@ void game_reset(gameData_t * data) {
     /* Reset dialog buttons */
     (&data->pauseMenu)->currentButton = 0;
     (&data->overMenu)->currentButton = 0;
+
+    /* Update field origin position based on the set alignment */
+    getTerminalSize(&(data->termX), &(data->termY));
+    _game_getAlignPos(alignment, &(data->fieldOriginX), &(data->fieldOriginY), data->termX, data->termY);
 
     /* Generate newly falling block */
     block_shuffleBag(&data->blockBag);
@@ -115,6 +117,8 @@ void game_update(programData_t * data, gameData_t * gameData) {
         gameData->screenClear = 1;
         gameData->termX = newTermX;
         gameData->termY = newTermY;
+        /* Updating field alignment based on new terminal size */
+        _game_getAlignPos(data->alignment, &(gameData->fieldOriginX), &(gameData->fieldOriginY), gameData->termX, gameData->termY);
     }
 
     /* Checking to make sure terminal dimensions are valid */
@@ -147,7 +151,7 @@ void game_update(programData_t * data, gameData_t * gameData) {
         break;
 
         case GAME_RESTART:
-            game_reset(gameData);
+            game_reset(gameData, data->alignment);
         break;
     }
 
@@ -323,11 +327,6 @@ void game_render(programData_t data, gameData_t gameData) {
     if(gameData.screenClear)
         erase();
 
-    /* Drawing general debug information (for now) */
-    //puts("DEMO GAME");
-    //printf("SCORE: %d\n", gameData.score);
-    //printf("dt: %lf\n", data.deltaTime);
-
     /* Drawing score and high score */
     cursorMoveTo(2, 2);
     printf("SCORE %6d", gameData.score);
@@ -389,10 +388,13 @@ void game_render(programData_t data, gameData_t gameData) {
 void game_renderRun(programData_t data, gameData_t gameData) {
     /* NOTE: Playing field draw calls are specific to the RUN state to not interfere with the GUI */
 
+    /* Getting field origin offset instead of actual position, since cursorMoveBy is used */
+    int originXOffset = gameData.fieldOriginX - 1;
+    int originYOffset = gameData.fieldOriginY - 1;
     /* Resetting cursor to field origin */
     cursorHome();
-    cursorMoveBy(RIGHT, gameData.fieldOriginX);
-    cursorMoveBy(DOWN, gameData.fieldOriginY);
+    cursorMoveBy(RIGHT, originXOffset);
+    cursorMoveBy(DOWN, originYOffset);
     
     /* Drawing top border */
     modeSet(NO_CODE, COLOR_WHITE, COLOR_BLACK);
@@ -405,7 +407,7 @@ void game_renderRun(programData_t data, gameData_t gameData) {
     
     /* Drawing field */
     for(short y = 0; y < FIELD_Y; y++) {
-        cursorMoveBy(RIGHT, gameData.fieldOriginX);
+        cursorMoveBy(RIGHT, originXOffset);
         modeSet(NO_CODE, COLOR_WHITE, COLOR_BLACK);
         putchar('|');
         for(short x = 0; x < FIELD_X; x++) {
@@ -425,16 +427,15 @@ void game_renderRun(programData_t data, gameData_t gameData) {
     }
 
     /* Drawing bottom border */
-    cursorMoveBy(RIGHT, gameData.fieldOriginX);
+    cursorMoveBy(RIGHT, originXOffset);
     putchar('|');
     for(int x = 0; x < FIELD_X; ++x) {
         fputs("==", stdout);
     }
     putchar('|');
 
-    /* Drawing the block (with the origin incremented by 1, which is the origin of the internal part of the field) 
-        NOTE: Here, fieldOriginX is offset by 1 because although the traditional tile has a width of 2, the vertical borders only have a width of 1 */
-    block_render(gameData.block, gameData.fieldOriginX+1, gameData.fieldOriginY+1);
+    /* Drawing the block */
+    block_render(gameData.block, gameData.fieldOriginX, gameData.fieldOriginY);
 }
 
 void game_renderPaused(programData_t data, gameData_t gameData) {
@@ -546,23 +547,25 @@ short _game_placeBlock(gameData_t * data) {
 
 void _game_getAlignPos(fieldAlign_t alignment, int * posX, int * posY, int terminalWidth, int terminalHeight) {
 
+    /* Get horizontal alignment-based x position */
     switch(alignment.alignX) {
         case ALIGN_LEFT:
             *posX = 16;
         break;
 
         case ALIGN_CENTER:
-            *posX = util_center((FIELD_X*2)+2, terminalWidth);
+            *posX = util_maxInt(util_center((FIELD_X*2)+2, terminalWidth), FIELD_MIN_LEFT);
         break;
 
         case ALIGN_RIGHT:
-            *posX = terminalWidth - ((FIELD_X*2)+2) - 16;
+            *posX = util_maxInt(terminalWidth - ((FIELD_X*2)+2) - 16, FIELD_MIN_LEFT);
         break;
 
         default:
             *posX = 16;
     }
 
+    /* Get vertical alignment-based y position */
     switch(alignment.alignY) {
         case ALIGN_TOP:
             *posY = 3;

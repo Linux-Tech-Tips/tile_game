@@ -29,6 +29,9 @@
 /** The height of the playing field */
 #define FIELD_Y 21
 
+/** The minimum left margin for the playing field */
+#define FIELD_MIN_LEFT 16
+
 /** The x coordinate of any newly created block */
 #define GAME_NEW_BLOCK_X 4
 /** The y coordinate of any newly created block */
@@ -140,8 +143,8 @@ nextTask_t game_task(programData_t * data);
 /** Initializes an empty gameData_t structure with the given parameters */
 void game_init(gameData_t * data, fieldAlign_t alignment);
 
-/** Resets the gameplay data of an existing gameData_t structure */
-void game_reset(gameData_t * data);
+/** Resets the gameplay data of an existing gameData_t structure with the given parameters */
+void game_reset(gameData_t * data, fieldAlign_t alignment);
 
 /** Destroys a gameData_t structure once it's no longer used */
 void game_destroy(gameData_t * data);

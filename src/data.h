@@ -64,11 +64,14 @@ typedef struct {
     double deltaTime;
 
 } programData_t;
+// TODO HERE: Add specific sub-structure for saved game data, and save only that, and leave the other data out of it
+// TODO Also might be a good idea to move the (termX, termY) from the specific task data to here, since it's needed everywhere anyways
 
 /** Enumeration defining the type of task to switch to */
 typedef enum {
     TASK_TITLE,
     TASK_GAME,
+    TASK_OPTIONS,
     TASK_EXIT
 } nextTask_t;
 

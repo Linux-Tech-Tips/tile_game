@@ -168,7 +168,7 @@ void keys_processBuffer(char * keyBuffer, size_t numKeys, keys_t * keys) {
                 keys->KEY_ENTER = 1;
                 break;
             case (char)(9):
-                keys->KEY_ESC = 1;
+                keys->KEY_TAB = 1;
                 break;
             
             default:
