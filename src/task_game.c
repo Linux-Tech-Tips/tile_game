@@ -235,6 +235,7 @@ void game_updateRun(programData_t * data, gameData_t * gameData) {
             for(int x = 0; x < FIELD_X; x++) {
                 if(y+lineClears < FIELD_Y) {
                     gameData->field[x][y+lineClears] = gameData->field[x][y];
+                    gameData->field[x][y] = 0;
                 }
             }
         }
