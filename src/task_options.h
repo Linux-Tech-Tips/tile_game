@@ -75,6 +75,15 @@ typedef struct {
     /** The 'back' button index */
     int backButton;
 
+    /** Floating dialog to ask the user to confirm data reset */
+    gui_dialog_t resetConfirm;
+    /** Floating confirm dialog 'yes' button */
+    int resetConfirmYes;
+    /** Floating confirm dialog 'no' button */
+    int resetConfirmNo;
+    /** Whether the floating confirm dialog is actively displayed or not */
+    short resetConfirmActive;
+
     /** The current terminal width */
     int termX;
     /** The current terminal height */
@@ -105,5 +114,10 @@ void options_update(programData_t * data, optionsData_t * optData);
 
 /** Draws the content of the options task */
 void options_render(programData_t data, optionsData_t optData);
+
+/** Refreshes the currently active buttons to their actual desired state based on the program data, 
+ * if 'apply' is set, the button state is instead applied to the settings
+*/
+void options_refreshButtons(programData_t * data, optionsData_t * optData, short apply);
 
 #endif /* TASK_OPTIONS_H */

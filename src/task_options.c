@@ -43,18 +43,6 @@ void options_init(optionsData_t * data, programData_t programData) {
     data->alignMenuXLeft = gui_addButton(&data->dialogs[DIALOG_ALIGN_MENU_X], " [ ]   LEFT ");
     data->alignMenuXCenter = gui_addButton(&data->dialogs[DIALOG_ALIGN_MENU_X], " [ ] CENTER ");
     data->alignMenuXRight = gui_addButton(&data->dialogs[DIALOG_ALIGN_MENU_X], " [ ]  RIGHT ");
-    /* Setting active button from data */
-    switch(programData.alignment.alignX) {
-        case ALIGN_LEFT:
-            data->dialogs[DIALOG_ALIGN_MENU_X].currentButton = data->alignMenuXLeft;
-        break;
-        case ALIGN_CENTER:
-            data->dialogs[DIALOG_ALIGN_MENU_X].currentButton = data->alignMenuXCenter;
-        break;
-        case ALIGN_RIGHT:
-            data->dialogs[DIALOG_ALIGN_MENU_X].currentButton = data->alignMenuXRight;
-        break;
-    }
 
     /* Vertical alignment menu */
     gui_createDialog_opt(&data->dialogs[DIALOG_ALIGN_MENU_Y], "GAME: VERTICAL ALIGNMENT", COLOR_WHITE, COLOR_RED, "", NO_CODE,
@@ -63,18 +51,6 @@ void options_init(optionsData_t * data, programData_t programData) {
     data->alignMenuYTop = gui_addButton(&data->dialogs[DIALOG_ALIGN_MENU_Y], " [ ]    TOP ");
     data->alignMenuYCenter = gui_addButton(&data->dialogs[DIALOG_ALIGN_MENU_Y], " [ ] CENTER ");
     data->alignMenuYBottom = gui_addButton(&data->dialogs[DIALOG_ALIGN_MENU_Y], " [ ] BOTTOM ");
-    /* Setting active button from data */
-    switch(programData.alignment.alignY) {
-        case ALIGN_TOP:
-            data->dialogs[DIALOG_ALIGN_MENU_Y].currentButton = data->alignMenuYTop;
-        break;
-        case ALIGN_CENTER:
-            data->dialogs[DIALOG_ALIGN_MENU_Y].currentButton = data->alignMenuYCenter;
-        break;
-        case ALIGN_BOTTOM:
-            data->dialogs[DIALOG_ALIGN_MENU_Y].currentButton = data->alignMenuYBottom;
-        break;
-    }
 
     /* FPS Counter menu */
     gui_createDialog_opt(&data->dialogs[DIALOG_FPS_COUNTER], "FPS COUNTER", COLOR_WHITE, COLOR_RED, "", NO_CODE,
@@ -82,8 +58,6 @@ void options_init(optionsData_t * data, programData_t programData) {
                             BUTTON_LINE, GUI_SIZE_AUTO, GUI_SIZE_AUTO);
     data->fpsMenuYes = gui_addButton(&data->dialogs[DIALOG_FPS_COUNTER], " [ ]    YES ");
     data->fpsMenuNo = gui_addButton(&data->dialogs[DIALOG_FPS_COUNTER], " [ ]     NO ");
-    /* Setting active button from data */
-    data->dialogs[DIALOG_FPS_COUNTER].currentButton = (programData.fpsCounter ? data->fpsMenuYes : data->fpsMenuNo);
 
     /* Data Reset menu */
     gui_createDialog_opt(&data->dialogs[DIALOG_DATA_RESET], "USER DATA", COLOR_WHITE, COLOR_RED, "", NO_CODE,
@@ -91,11 +65,21 @@ void options_init(optionsData_t * data, programData_t programData) {
                             BUTTON_LINE, GUI_SIZE_AUTO, GUI_SIZE_AUTO);
     data->resetDataButton = gui_addButton(&data->dialogs[DIALOG_DATA_RESET], "RESET USER DATA");
 
+    /* Data reset confirm dialog */
+    gui_createDialog_opt(&data->resetConfirm, "CONFIRM DATA RESET", COLOR_WHITE, COLOR_RED, 
+                            "Are you sure you want to reset all game data?", COLOR_WHITE, COLOR_BLUE, COLOR_CYAN, 
+                            COLOR_RED, COLOR_MAGENTA, BUTTON_LINE, GUI_SIZE_AUTO, GUI_SIZE_AUTO);
+    data->resetConfirmYes = gui_addButton(&data->resetConfirm, " = YES = ");
+    data->resetConfirmNo = gui_addButton(&data->resetConfirm, " = NO = ");
+
     /* Back button */
     gui_createDialog_opt(&data->dialogs[DIALOG_BUTTON_BACK], "", NO_CODE, NO_CODE, "", NO_CODE,
                             COLOR_BLUE, COLOR_CYAN, COLOR_RED, COLOR_BLACK,
                             BUTTON_LINE, GUI_SIZE_AUTO, GUI_SIZE_AUTO);
-    data->backButton = gui_addButton(&data->dialogs[DIALOG_BUTTON_BACK], "=== BACK TO TITLE ===");
+    data->backButton = gui_addButton(&data->dialogs[DIALOG_BUTTON_BACK], " === BACK TO TITLE === ");
+
+    /* Setting buttons to correct states based on program data */
+    options_refreshButtons(&programData, data, 0);
 
     getTerminalSize(&data->termX, &data->termY);
     data->screenClear = 1;
@@ -103,32 +87,14 @@ void options_init(optionsData_t * data, programData_t programData) {
 
 void options_destroy(optionsData_t * data, programData_t * programData) {
     /* Apply selected dialog button options */
-    /* DIALOG_ALIGN_MENU_X */
-    int currentButton = data->dialogs[DIALOG_ALIGN_MENU_X].currentButton;
-    if(currentButton == data->alignMenuXLeft)
-        programData->alignment.alignX = ALIGN_LEFT;
-    else if(currentButton == data->alignMenuXCenter)
-        programData->alignment.alignX = ALIGN_CENTER;
-    else if(currentButton == data->alignMenuXRight)
-        programData->alignment.alignX = ALIGN_RIGHT;
-    /* DIALOG_ALIGN_MENU_Y */
-    currentButton = data->dialogs[DIALOG_ALIGN_MENU_Y].currentButton;
-    if(currentButton == data->alignMenuYTop)
-        programData->alignment.alignY = ALIGN_TOP;
-    else if(currentButton == data->alignMenuYCenter)
-        programData->alignment.alignY = ALIGN_CENTER;
-    else if(currentButton == data->alignMenuYBottom)
-        programData->alignment.alignY = ALIGN_BOTTOM;
-    /* DIALOG_FPS_COUNTER */
-    currentButton = data->dialogs[DIALOG_FPS_COUNTER].currentButton;
-    if(currentButton == data->fpsMenuYes)
-        programData->fpsCounter = 1;
-    else if(currentButton == data->fpsMenuNo)
-        programData->fpsCounter = 0;
+    options_refreshButtons(programData, data, 1);
     
     /* Disposing of dialogs */
     for(int i = 0; i < OPTIONS_NUM_DIALOGS; ++i)
         gui_destroyDialog(&data->dialogs[i]);
+    
+    /* Disposing of floating confirm dialog */
+    gui_destroyDialog(&data->resetConfirm);
 }
 
 void options_update(programData_t * data, optionsData_t * optData) {
@@ -158,73 +124,102 @@ void options_update(programData_t * data, optionsData_t * optData) {
     optData->keyIn = nbRead(keyBuffer, TASK_OPTIONS_KEYS);
     keys_processBuffer(keyBuffer, TASK_OPTIONS_KEYS, &optData->keys);
 
-    /* Process active dialog switching (including cycle to the other end of the dialogs) */
-    if(optData->keys.KEY_ARROW_UP) {
-        if(optData->activeDialog == DIALOG_ALIGN_MENU_X)
-            optData->activeDialog = DIALOG_BUTTON_BACK;
-        else
-            --(optData->activeDialog);
-    } else if((optData->keys.KEY_ARROW_DOWN || optData->keys.KEY_TAB)) {
-        if(optData->activeDialog == DIALOG_BUTTON_BACK)
-            optData->activeDialog = DIALOG_ALIGN_MENU_X;
-        else
-            ++(optData->activeDialog);
-    }
+    if(optData->resetConfirmActive) {
+        /* Updating floating dialog if active */
+        
+        /* Exiting from dialog if requested */
+        if(optData->keys.KEY_ESC) {
+            optData->resetConfirmActive = 0;
+            optData->screenClear = 1;
+        }
 
-    /* Process ESC to exit task */
-    if(optData->keys.KEY_ESC) {
-        optData->nextTask = TASK_TITLE;
-        optData->optRun = 0;
-    }
+        /* Updating dialog */
+        int button = gui_update(&optData->resetConfirm, optData->keys);
 
-    /* Update currently active dialog */
-    int button = gui_update((optData->dialogs + optData->activeDialog), optData->keys);
+        /* Reset data on request, exit otherwise */
+        if(button >= 0) {
+            if(button == optData->resetConfirmYes) {
+                data_reset(data);
+                options_refreshButtons(data, optData, 0);
+                optData->resetConfirmActive = 0;
+                optData->screenClear = 1;
+            } else if(button == optData->resetConfirmNo) {
+                optData->resetConfirmActive = 0;
+                optData->screenClear = 1;
+            }
+        }
 
-    /* Process dialog button presses */
-    if(button >= 0) {
+    } else {
+        /* Updating rest of options dialog if floating dialog not active */
 
-        switch(optData->activeDialog) {
-            /* Horizontal align */
-            case DIALOG_ALIGN_MENU_X:
-                if(button == optData->alignMenuXLeft)
-                    data->alignment.alignX = ALIGN_LEFT;
-                else if(button == optData->alignMenuXCenter)
-                    data->alignment.alignX = ALIGN_CENTER;
-                else if(button == optData->alignMenuXRight)
-                    data->alignment.alignX = ALIGN_RIGHT;
-            break;
-            
-            /* Vertical align */
-            case DIALOG_ALIGN_MENU_Y:
-                if(button == optData->alignMenuYTop)
-                    data->alignment.alignY = ALIGN_TOP;
-                else if(button == optData->alignMenuYCenter)
-                    data->alignment.alignY = ALIGN_CENTER;
-                else if(button == optData->alignMenuYBottom)
-                    data->alignment.alignY = ALIGN_BOTTOM;
-            break;
-            
-            /* FPS counter */
-            case DIALOG_FPS_COUNTER:
-                if(button == optData->fpsMenuYes)
-                    data->fpsCounter = 1;
-                else if(button == optData->fpsMenuNo)
-                    data->fpsCounter = 0;
-            break;
+        /* Process active dialog switching (including cycle to the other end of the dialogs) */
+        if(optData->keys.KEY_ARROW_UP) {
+            if(optData->activeDialog == DIALOG_ALIGN_MENU_X)
+                optData->activeDialog = DIALOG_BUTTON_BACK;
+            else
+                --(optData->activeDialog);
+        } else if((optData->keys.KEY_ARROW_DOWN || optData->keys.KEY_TAB)) {
+            if(optData->activeDialog == DIALOG_BUTTON_BACK)
+                optData->activeDialog = DIALOG_ALIGN_MENU_X;
+            else
+                ++(optData->activeDialog);
+        }
 
-            /* Data reset */
-            case DIALOG_DATA_RESET:
-                if(button == optData->resetDataButton)
-                    data_reset(data);
-            break;
+        /* Process ESC to exit task */
+        if(optData->keys.KEY_ESC) {
+            optData->nextTask = TASK_TITLE;
+            optData->optRun = 0;
+        }
 
-            /* Back button */
-            case DIALOG_BUTTON_BACK:
-                if(button == optData->backButton) {
-                    optData->nextTask = TASK_TITLE;
-                    optData->optRun = 0;
-                }
-            break;
+        /* Update currently active dialog */
+        int button = gui_update((optData->dialogs + optData->activeDialog), optData->keys);
+
+        /* Process dialog button presses */
+        if(button >= 0) {
+
+            switch(optData->activeDialog) {
+                /* Horizontal align */
+                case DIALOG_ALIGN_MENU_X:
+                    if(button == optData->alignMenuXLeft)
+                        data->alignment.alignX = ALIGN_LEFT;
+                    else if(button == optData->alignMenuXCenter)
+                        data->alignment.alignX = ALIGN_CENTER;
+                    else if(button == optData->alignMenuXRight)
+                        data->alignment.alignX = ALIGN_RIGHT;
+                break;
+                
+                /* Vertical align */
+                case DIALOG_ALIGN_MENU_Y:
+                    if(button == optData->alignMenuYTop)
+                        data->alignment.alignY = ALIGN_TOP;
+                    else if(button == optData->alignMenuYCenter)
+                        data->alignment.alignY = ALIGN_CENTER;
+                    else if(button == optData->alignMenuYBottom)
+                        data->alignment.alignY = ALIGN_BOTTOM;
+                break;
+                
+                /* FPS counter */
+                case DIALOG_FPS_COUNTER:
+                    if(button == optData->fpsMenuYes)
+                        data->fpsCounter = 1;
+                    else if(button == optData->fpsMenuNo)
+                        data->fpsCounter = 0;
+                break;
+
+                /* Data reset */
+                case DIALOG_DATA_RESET:
+                    if(button == optData->resetDataButton)
+                        optData->resetConfirmActive = 1;
+                break;
+
+                /* Back button */
+                case DIALOG_BUTTON_BACK:
+                    if(button == optData->backButton) {
+                        optData->nextTask = TASK_TITLE;
+                        optData->optRun = 0;
+                    }
+                break;
+            }
         }
     }
 }
@@ -246,23 +241,31 @@ void options_render(programData_t data, optionsData_t optData) {
         return;
     }
 
-    /* Render dialogs */
-    int posY = 3;
-    for(int i = 0; i < OPTIONS_NUM_DIALOGS; ++i) {
-        /* Render dialog to the center of screen */
-        gui_dialog_t dialog = optData.dialogs[i];
-        int posX = util_center(dialog.realWidth, optData.termX);
-        gui_render(dialog, posX, posY, (optData.activeDialog == i));
+    /* Render reset confirm dialog and skipping the rest if desired */
+    if(optData.resetConfirmActive) {
+        /* Render reset confirm dialog */
+        int posX = util_center(optData.resetConfirm.realWidth, optData.termX);
+        gui_render(optData.resetConfirm, posX, 6, 1);
 
-        /* Drawing selected marker to desired buttons */
-        if(i < DIALOG_DATA_RESET) {
-            cursorMoveTo(posX+3 + (13 * dialog.currentButton), posY+2);
-            modeSet(STYLE_BOLD, COLOR_WHITE, (optData.activeDialog == i ? COLOR_BLUE : COLOR_CYAN));
-            putchar('*');
+    } else {
+        /* Render normal dialogs */
+        int posY = 3;
+        for(int i = 0; i < OPTIONS_NUM_DIALOGS; ++i) {
+            /* Render dialog to the center of screen */
+            gui_dialog_t dialog = optData.dialogs[i];
+            int posX = util_center(dialog.realWidth, optData.termX);
+            gui_render(dialog, posX, posY, (optData.activeDialog == i));
+
+            /* Drawing selected marker to desired buttons */
+            if(i < DIALOG_DATA_RESET) {
+                cursorMoveTo(posX+3 + (13 * dialog.currentButton), posY+2);
+                modeSet(STYLE_BOLD, COLOR_WHITE, (optData.activeDialog == i ? COLOR_BLUE : COLOR_CYAN));
+                putchar('*');
+            }
+
+            /* Adjusting vertical position for the next dialog */
+            posY += dialog.realHeight + 1;
         }
-
-        /* Adjusting vertical position for the next dialog */
-        posY += dialog.realHeight + 1;
     }
 
     /* Print top of the border */
@@ -288,4 +291,68 @@ void options_render(programData_t data, optionsData_t optData) {
 
     /* Flushing STDOUT to make sure everything renders */
     fflush(stdout);
+}
+
+void options_refreshButtons(programData_t * data, optionsData_t * optData, short apply) {
+
+    if(apply) {
+        /* Applying buttons to settings */
+
+        /* DIALOG_ALIGN_MENU_X */
+        int currentButton = optData->dialogs[DIALOG_ALIGN_MENU_X].currentButton;
+        if(currentButton == optData->alignMenuXLeft)
+            data->alignment.alignX = ALIGN_LEFT;
+        else if(currentButton == optData->alignMenuXCenter)
+            data->alignment.alignX = ALIGN_CENTER;
+        else if(currentButton == optData->alignMenuXRight)
+            data->alignment.alignX = ALIGN_RIGHT;
+
+        /* DIALOG_ALIGN_MENU_Y */
+        currentButton = optData->dialogs[DIALOG_ALIGN_MENU_Y].currentButton;
+        if(currentButton == optData->alignMenuYTop)
+            data->alignment.alignY = ALIGN_TOP;
+        else if(currentButton == optData->alignMenuYCenter)
+            data->alignment.alignY = ALIGN_CENTER;
+        else if(currentButton == optData->alignMenuYBottom)
+            data->alignment.alignY = ALIGN_BOTTOM;
+
+        /* DIALOG_FPS_COUNTER */
+        currentButton = optData->dialogs[DIALOG_FPS_COUNTER].currentButton;
+        if(currentButton == optData->fpsMenuYes)
+            data->fpsCounter = 1;
+        else if(currentButton == optData->fpsMenuNo)
+            data->fpsCounter = 0;
+
+    } else {
+        /* Applying settings to buttons */
+
+        /* DIALOG_ALIGN_MENU_X */
+        switch(data->alignment.alignX) {
+            case ALIGN_LEFT:
+                optData->dialogs[DIALOG_ALIGN_MENU_X].currentButton = optData->alignMenuXLeft;
+            break;
+            case ALIGN_CENTER:
+                optData->dialogs[DIALOG_ALIGN_MENU_X].currentButton = optData->alignMenuXCenter;
+            break;
+            case ALIGN_RIGHT:
+                optData->dialogs[DIALOG_ALIGN_MENU_X].currentButton = optData->alignMenuXRight;
+            break;
+        }
+
+        /* DIALOG_ALIGN_MENU_Y */
+        switch(data->alignment.alignY) {
+            case ALIGN_TOP:
+                optData->dialogs[DIALOG_ALIGN_MENU_Y].currentButton = optData->alignMenuYTop;
+            break;
+            case ALIGN_CENTER:
+                optData->dialogs[DIALOG_ALIGN_MENU_Y].currentButton = optData->alignMenuYCenter;
+            break;
+            case ALIGN_BOTTOM:
+                optData->dialogs[DIALOG_ALIGN_MENU_Y].currentButton = optData->alignMenuYBottom;
+            break;
+        }
+
+        /* DIALOG_FPS_COUNTER */
+        optData->dialogs[DIALOG_FPS_COUNTER].currentButton = (data->fpsCounter ? optData->fpsMenuYes : optData->fpsMenuNo);
+    }
 }
