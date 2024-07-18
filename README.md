@@ -21,9 +21,11 @@ To try out the demo, clone the repository on a Linux machine with *gcc* and *mak
 ## Development Roadmap
 
 **Features**:
+- data.h modify data structure - saved user data in separate struct
 - Code refactoring
 
 **Fixes**:
 - BUG: Few rows from the top, unsupported blocks don't fall down properly/aren't cleared properly
+- BUG: Accelerating block drop using down arrow doesn't follow delta time (speed changes device to device)
 - Command line option to disable color mode for colorless terminals
 - Fix all warnings once release-applicable version done
