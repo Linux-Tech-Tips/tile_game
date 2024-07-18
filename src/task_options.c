@@ -154,7 +154,7 @@ void options_update(programData_t * data, optionsData_t * optData) {
     }
 
     /* Process keyboard input */
-    char keyBuffer [TASK_OPTIONS_KEYS];
+    char keyBuffer [TASK_OPTIONS_KEYS] = {0};
     optData->keyIn = nbRead(keyBuffer, TASK_OPTIONS_KEYS);
     keys_processBuffer(keyBuffer, TASK_OPTIONS_KEYS, &optData->keys);
 
