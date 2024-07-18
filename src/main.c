@@ -38,6 +38,9 @@ int main(int argc, char * argv []) {
     signalControl.sa_handler = signalHandler;
     sigaction(SIGINT, &signalControl, NULL);
 
+    /* Seeding pseudo-random number generator */
+    srand(time(NULL));
+
     /* Task-independent data declaration and initialization */
     programData_t data = {0};
     data_load(&data, SAVE_FILE_NAME);

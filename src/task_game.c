@@ -6,8 +6,6 @@ nextTask_t game_task(programData_t * data) {
     gameData_t gameData = {0};
     game_init(&gameData, data->alignment);
 
-    srand(time(NULL));
-
     /* Game Task Loop */
     while(gameData.gameRun && data->run) {
 
