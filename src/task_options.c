@@ -181,29 +181,29 @@ void options_update(programData_t * data, optionsData_t * optData) {
                 /* Horizontal align */
                 case DIALOG_ALIGN_MENU_X:
                     if(button == optData->alignMenuXLeft)
-                        data->alignment.alignX = ALIGN_LEFT;
+                        (&data->userData)->alignment.alignX = ALIGN_LEFT;
                     else if(button == optData->alignMenuXCenter)
-                        data->alignment.alignX = ALIGN_CENTER;
+                        (&data->userData)->alignment.alignX = ALIGN_CENTER;
                     else if(button == optData->alignMenuXRight)
-                        data->alignment.alignX = ALIGN_RIGHT;
+                        (&data->userData)->alignment.alignX = ALIGN_RIGHT;
                 break;
                 
                 /* Vertical align */
                 case DIALOG_ALIGN_MENU_Y:
                     if(button == optData->alignMenuYTop)
-                        data->alignment.alignY = ALIGN_TOP;
+                        (&data->userData)->alignment.alignY = ALIGN_TOP;
                     else if(button == optData->alignMenuYCenter)
-                        data->alignment.alignY = ALIGN_CENTER;
+                        (&data->userData)->alignment.alignY = ALIGN_CENTER;
                     else if(button == optData->alignMenuYBottom)
-                        data->alignment.alignY = ALIGN_BOTTOM;
+                        (&data->userData)->alignment.alignY = ALIGN_BOTTOM;
                 break;
                 
                 /* FPS counter */
                 case DIALOG_FPS_COUNTER:
                     if(button == optData->fpsMenuYes)
-                        data->fpsCounter = 1;
+                        (&data->userData)->fpsCounter = 1;
                     else if(button == optData->fpsMenuNo)
-                        data->fpsCounter = 0;
+                        (&data->userData)->fpsCounter = 0;
                 break;
 
                 /* Data reset */
@@ -301,33 +301,33 @@ void options_refreshButtons(programData_t * data, optionsData_t * optData, short
         /* DIALOG_ALIGN_MENU_X */
         int currentButton = optData->dialogs[DIALOG_ALIGN_MENU_X].currentButton;
         if(currentButton == optData->alignMenuXLeft)
-            data->alignment.alignX = ALIGN_LEFT;
+            (&data->userData)->alignment.alignX = ALIGN_LEFT;
         else if(currentButton == optData->alignMenuXCenter)
-            data->alignment.alignX = ALIGN_CENTER;
+            (&data->userData)->alignment.alignX = ALIGN_CENTER;
         else if(currentButton == optData->alignMenuXRight)
-            data->alignment.alignX = ALIGN_RIGHT;
+            (&data->userData)->alignment.alignX = ALIGN_RIGHT;
 
         /* DIALOG_ALIGN_MENU_Y */
         currentButton = optData->dialogs[DIALOG_ALIGN_MENU_Y].currentButton;
         if(currentButton == optData->alignMenuYTop)
-            data->alignment.alignY = ALIGN_TOP;
+            (&data->userData)->alignment.alignY = ALIGN_TOP;
         else if(currentButton == optData->alignMenuYCenter)
-            data->alignment.alignY = ALIGN_CENTER;
+            (&data->userData)->alignment.alignY = ALIGN_CENTER;
         else if(currentButton == optData->alignMenuYBottom)
-            data->alignment.alignY = ALIGN_BOTTOM;
+            (&data->userData)->alignment.alignY = ALIGN_BOTTOM;
 
         /* DIALOG_FPS_COUNTER */
         currentButton = optData->dialogs[DIALOG_FPS_COUNTER].currentButton;
         if(currentButton == optData->fpsMenuYes)
-            data->fpsCounter = 1;
+            (&data->userData)->fpsCounter = 1;
         else if(currentButton == optData->fpsMenuNo)
-            data->fpsCounter = 0;
+            (&data->userData)->fpsCounter = 0;
 
     } else {
         /* Applying settings to buttons */
 
         /* DIALOG_ALIGN_MENU_X */
-        switch(data->alignment.alignX) {
+        switch(data->userData.alignment.alignX) {
             case ALIGN_LEFT:
                 optData->dialogs[DIALOG_ALIGN_MENU_X].currentButton = optData->alignMenuXLeft;
             break;
@@ -340,7 +340,7 @@ void options_refreshButtons(programData_t * data, optionsData_t * optData, short
         }
 
         /* DIALOG_ALIGN_MENU_Y */
-        switch(data->alignment.alignY) {
+        switch(data->userData.alignment.alignY) {
             case ALIGN_TOP:
                 optData->dialogs[DIALOG_ALIGN_MENU_Y].currentButton = optData->alignMenuYTop;
             break;
@@ -353,6 +353,6 @@ void options_refreshButtons(programData_t * data, optionsData_t * optData, short
         }
 
         /* DIALOG_FPS_COUNTER */
-        optData->dialogs[DIALOG_FPS_COUNTER].currentButton = (data->fpsCounter ? optData->fpsMenuYes : optData->fpsMenuNo);
+        optData->dialogs[DIALOG_FPS_COUNTER].currentButton = (data->userData.fpsCounter ? optData->fpsMenuYes : optData->fpsMenuNo);
     }
 }

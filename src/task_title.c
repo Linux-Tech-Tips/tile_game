@@ -132,7 +132,7 @@ void title_render(programData_t data, titleData_t titleData) {
     }
 
     /* Print the FPS counter (if desired) */
-    if(data.fpsCounter) {
+    if(data.userData.fpsCounter) {
         cursorMoveTo(2, 2);
         printf("FPS: %.2f  ", (float)(1.0f/data.deltaTime));
     }

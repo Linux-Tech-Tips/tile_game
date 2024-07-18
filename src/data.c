@@ -7,12 +7,11 @@ void data_load(programData_t * data, char const * fileName) {
 
     if(file) {
         /* Read bytes from file into programData */
-        int num = fread((void *)(data), sizeof(programData_t), 1, file);
+        int num = fread((void *)(&data->userData), sizeof(userData_t), 1, file);
         /* End function here if successfully read */
         if(num > 0) {
-            /* Hard-setting certain values */
-            data->run = 1;
-            clock_gettime(CLOCK_MONOTONIC, &(data->prevTime));
+            /* Initializing unsaved fields */
+            data_init(data);
             /* Closing file and ending function */
             fclose(file);
             return;
@@ -34,7 +33,7 @@ void data_save(programData_t data, char const * fileName) {
     int num = 0;
     if(file) {
         /* Write data into file */
-        num = fwrite((void *)(&data), sizeof(programData_t), 1, file);
+        num = fwrite((void *)(&data.userData), sizeof(userData_t), 1, file);
     }
 
     /* Print error message if data not saved */
@@ -44,10 +43,18 @@ void data_save(programData_t data, char const * fileName) {
 }
 
 void data_reset(programData_t * data) {
+    data_init(data);
+    (&data->userData)->highScore = 0;
+    (&data->userData)->fpsCounter = 0;
+    (&data->userData)->alignment = (fieldAlign_t){ALIGN_CENTER, ALIGN_TOP};
+}
+
+void data_init(programData_t * data) {
     data->run = 1;
-    data->highScore = 0;
-    data->fpsCounter = 0;
-    data->alignment = (fieldAlign_t){ALIGN_CENTER, ALIGN_TOP};
+    clock_gettime(CLOCK_MONOTONIC, &(data->prevTime));
+    data->deltaTime = 0;
+    getTerminalSize(&data->termX, &data->termY);
+    data->termResized = 0;
 }
 
 
@@ -82,4 +89,22 @@ short data_validTerm(void) {
     int x = 0, y = 0;
     getTerminalSize(&x, &y);
     return (x >= TERM_MIN_X && y >= TERM_MIN_Y);
+}
+
+short data_termSize(programData_t * data) {
+    /* Getting new terminal size */
+    int x = 0, y = 0;
+    getTerminalSize(&x, &y);
+    /* Updating program data based on new values */
+    if(data->termX != x || data->termY != y) {
+        data->termResized = 1;
+        if(data->termX != x) {
+            data->termX = x;
+        }
+        if(data->termY != y) {
+            data->termY = y;
+        }
+    } else {
+        data->termResized = 0;
+    }
 }

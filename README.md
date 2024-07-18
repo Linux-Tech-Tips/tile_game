@@ -21,7 +21,6 @@ To try out the demo, clone the repository on a Linux machine with *gcc* and *mak
 ## Development Roadmap
 
 **Features**:
-- data.h modify data structure - saved user data in separate struct
 - Code refactoring
 
 **Fixes**:

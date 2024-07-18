@@ -42,30 +42,40 @@ typedef struct {
     _alignment_t alignY;
 } fieldAlign_t;
 
+/** Saved user data */
+typedef struct {
+
+    /** The alignment of the game playing field */
+    fieldAlign_t alignment;
+
+    /** Whether the FPS (Frames Per Second) counter should be printed */
+    short fpsCounter;
+
+    /** The highest achieved score */
+    int highScore;
+
+} userData_t;
+
 /** The data structure containing task-independent general program data */
 typedef struct {
 
     /** Whether the program is running (1) or should terminate (0) */
     short run;
 
-    /** The highest achieved score */
-    int highScore;
-
-    /** Whether the FPS (Frames Per Second) counter should be printed */
-    short fpsCounter;
-
-    /** The alignment of the game playing field */
-    fieldAlign_t alignment;
-
+    /** The saved user data */
+    userData_t userData;
 
     /** The time at any previous point of measurement */
     struct timespec prevTime;
     /** The time between the last frame and the current one */
     double deltaTime;
 
+    /** The current terminal dimensions */
+    int termX, termY;
+    /** Whether the terminal was resized in the last frame */
+    short termResized;
+
 } programData_t;
-// TODO HERE: Add specific sub-structure for saved game data, and save only that, and leave the other data out of it
-// TODO Also might be a good idea to move the (termX, termY) from the specific task data to here, since it's needed everywhere anyways
 
 /** Enumeration defining the type of task to switch to */
 typedef enum {
@@ -84,8 +94,11 @@ void data_load(programData_t * data, char const * fileName);
 /** Saves a programData_t structure into a file with the given name */
 void data_save(programData_t data, char const * fileName);
 
-/** Sets a programData_t structure to default values */
+/** Resets a programData_t structure to default values, including saved user data */
 void data_reset(programData_t * data);
+
+/** Initializes the unsaved data of a programData_t structure to initial values */
+void data_init(programData_t * data);
 
 
 /** Starts frame time tracking, to be called at the start of frame */
@@ -103,5 +116,8 @@ double data_timeToSec(struct timespec time);
  * @returns whether the current terminal is valid (1) or not (0)
 */
 short data_validTerm(void);
+
+/** Updates the currently saved terminal size, returns whether the terminal was resized in the last frame */
+short data_termSize(programData_t * data);
 
 #endif /* PROGRAM_DATA_H */

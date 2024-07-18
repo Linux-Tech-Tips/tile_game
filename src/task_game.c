@@ -4,7 +4,7 @@ nextTask_t game_task(programData_t * data) {
 
     /* Game Task Initialization */
     gameData_t gameData = {0};
-    game_init(&gameData, data->alignment);
+    game_init(&gameData, data->userData.alignment);
 
     /* Game Task Loop */
     while(gameData.gameRun && data->run) {
@@ -116,7 +116,7 @@ void game_update(programData_t * data, gameData_t * gameData) {
         gameData->termX = newTermX;
         gameData->termY = newTermY;
         /* Updating field alignment based on new terminal size */
-        _game_getAlignPos(data->alignment, &(gameData->fieldOriginX), &(gameData->fieldOriginY), gameData->termX, gameData->termY);
+        _game_getAlignPos(data->userData.alignment, &(gameData->fieldOriginX), &(gameData->fieldOriginY), gameData->termX, gameData->termY);
     }
 
     /* Checking to make sure terminal dimensions are valid */
@@ -149,7 +149,7 @@ void game_update(programData_t * data, gameData_t * gameData) {
         break;
 
         case GAME_RESTART:
-            game_reset(gameData, data->alignment);
+            game_reset(gameData, data->userData.alignment);
         break;
     }
 
@@ -250,8 +250,8 @@ void game_updateRun(programData_t * data, gameData_t * gameData) {
     }
 
     /* Checking and updating high score */
-    if(gameData->score > data->highScore)
-        data->highScore = gameData->score;
+    if(gameData->score > data->userData.highScore)
+        (&data->userData)->highScore = gameData->score;
 }
 
 void game_updatePaused(programData_t * data, gameData_t * gameData) {
@@ -329,10 +329,10 @@ void game_render(programData_t data, gameData_t gameData) {
     cursorMoveTo(2, 2);
     printf("SCORE %6d", gameData.score);
     cursorMoveTo(2, 3);
-    printf("BEST  %6d", data.highScore);
+    printf("BEST  %6d", data.userData.highScore);
 
     /* Drawing FPS if requested */
-    if(data.fpsCounter) {
+    if(data.userData.fpsCounter) {
         cursorMoveTo(2, 4);
         printf("FPS: %.2f  ", (float)(1.0f/data.deltaTime));
     }
