@@ -25,5 +25,4 @@ To try out the demo, clone the repository on a Linux machine with *gcc* and *mak
 - Command line option to disable color mode for colorless terminals
 
 **Fixes**:
-- BUG: Accelerating block drop using down arrow doesn't follow delta time (speed changes device to device)
 - Fix all warnings once release-applicable version done

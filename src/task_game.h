@@ -41,6 +41,8 @@
 #define GAME_DEFAULT_FALL_DELAY 0.5f
 /** The default time it takes the block to be placed if not falling */
 #define GAME_DEFAULT_PLACE_DELAY 0.8f
+/** The default minimum delay between two block downward drops */
+#define GAME_DEFAULT_DROP_TIME 0.05f
 
 /** Updates-per-second rate for the TASK_GAME task */
 #define TASK_GAME_UPS 60
@@ -128,6 +130,11 @@ typedef struct {
     float placeDelay;
     /** The timer for the current block placement */
     float placeTimer;
+
+    /** The minimum time delay between two drops of a block using the down arrow key */
+    float dropTime;
+    /** The timer counting down the drop time delay */
+    float dropTimer;
 
 } gameData_t;
 

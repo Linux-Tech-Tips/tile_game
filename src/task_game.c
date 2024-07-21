@@ -58,6 +58,8 @@ void game_init(gameData_t * data, fieldAlign_t alignment) {
     /* Unmutable gameplay options */
     data->defaultFallDelay = GAME_DEFAULT_FALL_DELAY;
     data->placeDelay = GAME_DEFAULT_PLACE_DELAY;
+    data->dropTime = GAME_DEFAULT_DROP_TIME;
+    data->dropTimer = 0;
     
     /* Block bag initialization */
     block_initBag(&data->blockBag);
@@ -159,7 +161,9 @@ void game_updateRun(programData_t * data, gameData_t * gameData) {
 
     /* --- Keyboard Processing --- */
 
-    /* NOTE: Keyboard processing expects only one key to be pressed in a frame, and processes said key from buffer[0] */
+    /* Whether the block was already dropped using the down arrow key */
+    short dropped = 0;
+
     if(gameData->keyIn) {
 
         short moved = 0;
@@ -173,11 +177,13 @@ void game_updateRun(programData_t * data, gameData_t * gameData) {
             game_moveBlock(&gameData->block, -1, 0, gameData->field, 0);
             moved = 1;
         } else if(gameData->keys.KEY_ARROW_DOWN) {
-            /* TODO BUGFIX: MAKE BLOCK DROPDOWN FOLLOW DELTA TIME */
-            short dropped = game_moveBlock(&gameData->block, 0, 1, gameData->field, 0);
-            moved = 1;
-            if(dropped)
-                gameData->score += 1 + 5 * ((gameData->defaultFallDelay / gameData->fallDelay) - 1);
+            if(gameData->dropTimer <= 0) {
+                dropped = game_moveBlock(&gameData->block, 0, 1, gameData->field, 0);
+                moved = 1;
+                if(dropped)
+                    gameData->score += 1 + 5 * ((gameData->defaultFallDelay / gameData->fallDelay) - 1);
+                gameData->dropTimer = gameData->dropTime;
+            }
         }
 
         if(moved && !gameData->falling && gameData->placeTimer > 0)
@@ -193,7 +199,7 @@ void game_updateRun(programData_t * data, gameData_t * gameData) {
     /* --- Gameplay Logic --- */
 
     /* Check whether the block is in falling state or being placed state */
-    if(gameData->falling) {
+    if(gameData->falling && !dropped) {
         /* Decrement fall timer and proceed with fall */
         if(gameData->fallTimer > 0) {
             gameData->fallTimer -= data->deltaTime;
@@ -253,6 +259,10 @@ void game_updateRun(programData_t * data, gameData_t * gameData) {
     /* Checking and updating high score */
     if(gameData->score > data->userData.highScore)
         (&data->userData)->highScore = gameData->score;
+
+    /* Processing the drop delay timer */
+    if(gameData->dropTimer > 0)
+        gameData->dropTimer -= data->deltaTime;
 }
 
 void game_updatePaused(programData_t * data, gameData_t * gameData) {
