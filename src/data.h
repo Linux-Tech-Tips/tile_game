@@ -19,7 +19,6 @@
 #define SAVE_FILE_NAME ".game_data"
 
 #include <time.h>
-
 #include "terminal_gui/terminal_f.h"
 
 
@@ -115,10 +114,10 @@ void data_frameEnd(programData_t * data, int ups);
 /** Utility function to convert the C library timespec structure into precise seconds, saved as a double */
 double data_timeToSec(struct timespec time);
 
-/** Utility function to validate the current terminal size against the required MIN size 
+/** Utility function to validate the currently loaded terminal size against the required MIN size 
  * @returns whether the current terminal is valid (1) or not (0)
 */
-short data_validTerm(void);
+short data_validTerm(programData_t data);
 
 /** Updates the currently saved terminal size, returns whether the terminal was resized in the last frame */
 short data_termSize(programData_t * data);

@@ -9,7 +9,6 @@
 
 #include <string.h>
 
-
 /* === KEYBOARD IO === */
 
 /** Structure containing boolean switches for all keys detected by the application, 

@@ -30,11 +30,6 @@ typedef struct {
     /** Whether the current terminal is valid */
     short validTerminal;
 
-    /** The last frame terminal size */
-    int termX, termY;
-    /** Whether the terminal was resized in the last frame */
-    short terminalResized;
-
     /** Whether the screen should be erased the next frame */
     short screenClear;
 

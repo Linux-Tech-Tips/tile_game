@@ -16,7 +16,7 @@
 /** The size (number of tiles) of a standard block */
 #define BLOCK_SIZE 4
 /** The number of coordinate values (here: XY -> 2) of a tile, for clarity and to avoid magic numbers elsewhere in code */
-#define TILE_XY 2
+#define TILE_COORDS 2
 /** The index of a tile's x coordinate */
 #define TILE_X 0
 /** The index of a tile's y coordinate */
@@ -29,7 +29,7 @@
 
 /** Enumeration defining the type of block */
 typedef enum {
-    /** T Block - classic 3x2 inverse T shape */
+    /** T Block - 3x2 inverse T shape */
     BLOCK_T = COLOR_CYAN,
     /** Cube Block - 2x2 cube shape */
     BLOCK_CUBE = COLOR_MAGENTA,
@@ -56,7 +56,7 @@ typedef enum {
 */
 typedef struct {
     /** The tiles the block consists of */
-    int tiles [BLOCK_SIZE][TILE_XY];
+    int tiles [BLOCK_SIZE][TILE_COORDS];
     /** The type of the block (mostly responsible for visuals, color) */
     blockType_t type;
 } block_t;
@@ -70,10 +70,10 @@ typedef struct {
 /* === Functions === */
 
 /** Moves the given tile by the specified offset */
-void block_moveTile(int tile [TILE_XY], int x, int y);
+void block_moveTile(int tile [TILE_COORDS], int x, int y);
 
 /** Rotates the given tile around the specified origin */
-void block_rotateTile(int tile [TILE_XY], int originX, int originY);
+void block_rotateTile(int tile [TILE_COORDS], int originX, int originY);
 
 /** Populates the given block_t data structure with data of the given block type */
 void block_gen(block_t * block, blockType_t type, int startX, int startY);
@@ -98,7 +98,7 @@ blockType_t block_getNext(bag_t * bag);
 void block_shuffleBag(bag_t * bag);
 
 /** Initializes the bag structure with unshuffled blocks and an index of 0, and proceeds to shuffle the blocks
- * NOTE: The format the unshuffled bag is generated in is all the blocks in order, twice
+ * NOTE: The format the unshuffled bag is generated in is each block 'BLOCK_BAG_SIZE'-times, in order
 */
 void block_initBag(bag_t * bag);
 

@@ -7,7 +7,7 @@ void data_load(programData_t * data, char const * fileName) {
 
     if(file) {
         /* Read bytes from file into programData */
-        int num = fread((void *)(&data->userData), sizeof(userData_t), 1, file);
+        int num = fread((void *)(&data->userData), sizeof(data->userData), 1, file);
         /* End function here if successfully read */
         if(num > 0) {
             /* Initializing unsaved fields */
@@ -33,7 +33,7 @@ void data_save(programData_t data, char const * fileName) {
     int num = 0;
     if(file) {
         /* Write data into file */
-        num = fwrite((void *)(&data.userData), sizeof(userData_t), 1, file);
+        num = fwrite((void *)(&data.userData), sizeof(data.userData), 1, file);
     }
 
     /* Print error message if data not saved */
@@ -43,17 +43,23 @@ void data_save(programData_t data, char const * fileName) {
 }
 
 void data_reset(programData_t * data) {
+    /* Re-initializing non-saved values to defaults */
     data_init(data);
+    /* Resetting saved user data */
     (&data->userData)->highScore = 0;
     (&data->userData)->fpsCounter = 0;
     (&data->userData)->alignment = (fieldAlign_t){ALIGN_CENTER, ALIGN_TOP};
 }
 
 void data_init(programData_t * data) {
+    /* Setting misc values */
     data->run = 1;
-    data->exitCode = 0;
+    /* Starting with the default exit code of 1 to error if not explicitly set to 0 (on graceful exit) */
+    data->exitCode = 1;
+    /* Setting time */
     clock_gettime(CLOCK_MONOTONIC, &(data->prevTime));
     data->deltaTime = 0;
+    /* Setting terminal size */
     getTerminalSize(&data->termX, &data->termY);
     data->termResized = 0;
 }
@@ -86,10 +92,8 @@ double data_timeToSec(struct timespec time) {
     return (double)(time.tv_sec) + (time.tv_nsec/1000000000.0L);
 }
 
-short data_validTerm(void) {
-    int x = 0, y = 0;
-    getTerminalSize(&x, &y);
-    return (x >= TERM_MIN_X && y >= TERM_MIN_Y);
+short data_validTerm(programData_t data) {
+    return (data.termX >= TERM_MIN_X && data.termY >= TERM_MIN_Y);
 }
 
 short data_termSize(programData_t * data) {

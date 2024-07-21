@@ -13,7 +13,7 @@
 # USER-DEFINED SECTION OF THE CODE
 
 # General project settings
-PROJECT_NAME := TETRGS
+PROJECT_NAME := TILE_GAME
 OUTFILE := game.elf
 
 # Compiler and linker programs

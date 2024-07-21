@@ -20,8 +20,5 @@ To try out the demo, clone the repository on a Linux machine with *gcc* and *mak
 
 ## Development Roadmap
 
-**Features**:
-- Code refactoring (consistency, readability)
-
 **Fixes**:
 - Fix all warnings once release-applicable version done

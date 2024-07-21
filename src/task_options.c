@@ -99,8 +99,11 @@ void options_destroy(optionsData_t * data, programData_t * programData) {
 
 void options_update(programData_t * data, optionsData_t * optData) {
 
+    /* Updating terminal size info */
+    data_termSize(data);
+
     /* Validating terminal size */
-    optData->validTerminal = data_validTerm();
+    optData->validTerminal = data_validTerm(*data);
 
     /* Skipping the rest of update if the terminal is invalid - logic not needed */
     if(!optData->validTerminal) {
@@ -108,16 +111,9 @@ void options_update(programData_t * data, optionsData_t * optData) {
         return;
     }
 
-    /* Getting the current frame terminal size */
-    int newTermX, newTermY;
-    getTerminalSize(&newTermX, &newTermY);
-
-    /* Clearing screen and updating sizes on resize */
-    if(newTermX != optData->termX || newTermY != optData->termY) {
+    /* Asking to clear the screen if terminal resized */
+    if(data->termResized)
         optData->screenClear = 1;
-        optData->termX = newTermX;
-        optData->termY = newTermY;
-    }
 
     /* Process keyboard input */
     char keyBuffer [TASK_OPTIONS_KEYS] = {0};

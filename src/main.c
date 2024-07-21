@@ -45,7 +45,7 @@ int main(int argc, char * argv []) {
     signalNum = &(data.exitCode);
 
     /* Minimum terminal size check */
-    if(!data_validTerm()) {
+    if(!data_validTerm(data)) {
         fprintf(stderr, "Unsupported Terminal Size: %dx%d (minimum 48x24 required)\n", data.termX, data.termY);
         return 1;
     }

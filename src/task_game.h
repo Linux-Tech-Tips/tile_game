@@ -3,7 +3,7 @@
  * @author Martin (Linux-Tech-Tips)
  * @brief Header file declaring data structures and functions related to the game task (data.h/TASK_GAME)
  * 
- * This file is responsible for the task handling the actual TETRGS game itself, including data structures and functions 
+ * This file is responsible for the task handling the actual game itself, including data structures and functions 
  * for initialization, proper termination and the loop.
 */
 
@@ -109,9 +109,6 @@ typedef struct {
     /** The origin point (top left) of the game playing field */
     int fieldOriginX, fieldOriginY;
 
-    /** The current size of the terminal */
-    int termX, termY;
-
     /** The tiles of the currently falling block, specified as an array of XY coord pairs, with the first tile being the origin of rotation */
     block_t block;
     /** The randomizer bag to generate a constrained random next block */
@@ -148,10 +145,10 @@ nextTask_t game_task(programData_t * data);
 /* --- Create/Destroy Functions --- */
 
 /** Initializes an empty gameData_t structure with the given parameters */
-void game_init(gameData_t * data, fieldAlign_t alignment);
+void game_init(gameData_t * data, fieldAlign_t alignment, int termX, int termY);
 
 /** Resets the gameplay data of an existing gameData_t structure with the given parameters */
-void game_reset(gameData_t * data, fieldAlign_t alignment);
+void game_reset(gameData_t * data, fieldAlign_t alignment, int termX, int termY);
 
 /** Destroys a gameData_t structure once it's no longer used */
 void game_destroy(gameData_t * data);

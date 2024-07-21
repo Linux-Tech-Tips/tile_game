@@ -4,7 +4,7 @@ nextTask_t game_task(programData_t * data) {
 
     /* Game Task Initialization */
     gameData_t gameData = {0};
-    game_init(&gameData, data->userData.alignment);
+    game_init(&gameData, data->userData.alignment, data->termX, data->termY);
 
     /* Game Task Loop */
     while(gameData.gameRun && data->run) {
@@ -33,7 +33,7 @@ nextTask_t game_task(programData_t * data) {
 }
 
 
-void game_init(gameData_t * data, fieldAlign_t alignment) {
+void game_init(gameData_t * data, fieldAlign_t alignment, int termX, int termY) {
     /* Misc data */
     data->gameRun = 1;
     data->nextTask = TASK_TITLE;
@@ -65,10 +65,10 @@ void game_init(gameData_t * data, fieldAlign_t alignment) {
     block_initBag(&data->blockBag);
 
     /* Reset gameplay data */
-    game_reset(data, alignment);
+    game_reset(data, alignment, termX, termY);
 }
 
-void game_reset(gameData_t * data, fieldAlign_t alignment) {
+void game_reset(gameData_t * data, fieldAlign_t alignment, int termX, int termY) {
     /* Reset game state and timers */
     data->gameState = GAME_RUN;
     data->score = 0;
@@ -92,8 +92,7 @@ void game_reset(gameData_t * data, fieldAlign_t alignment) {
     (&data->overMenu)->currentButton = 0;
 
     /* Update field origin position based on the set alignment */
-    getTerminalSize(&(data->termX), &(data->termY));
-    _game_getAlignPos(alignment, &(data->fieldOriginX), &(data->fieldOriginY), data->termX, data->termY);
+    _game_getAlignPos(alignment, &(data->fieldOriginX), &(data->fieldOriginY), termX, termY);
 
     /* Generate newly falling block */
     block_shuffleBag(&data->blockBag);
@@ -101,6 +100,7 @@ void game_reset(gameData_t * data, fieldAlign_t alignment) {
 }
 
 void game_destroy(gameData_t * data) {
+    /* Unload GUI dialogs */
     gui_destroyDialog(&data->pauseMenu);
     gui_destroyDialog(&data->overMenu);
 }
@@ -108,21 +108,17 @@ void game_destroy(gameData_t * data) {
 
 void game_update(programData_t * data, gameData_t * gameData) {
 
-    /* Getting the current frame terminal size */
-    int newTermX, newTermY;
-    getTerminalSize(&newTermX, &newTermY);
+    /* Updating terminal size information */
+    data_termSize(data);
 
-    /* Clearing screen and updating sizes on resize */
-    if(newTermX != gameData->termX || newTermY != gameData->termY) {
+    /* Clearing screen and updating field alignment on terminal resize */
+    if(data->termResized) {
         gameData->screenClear = 1;
-        gameData->termX = newTermX;
-        gameData->termY = newTermY;
-        /* Updating field alignment based on new terminal size */
-        _game_getAlignPos(data->userData.alignment, &(gameData->fieldOriginX), &(gameData->fieldOriginY), gameData->termX, gameData->termY);
+        _game_getAlignPos(data->userData.alignment, &(gameData->fieldOriginX), &(gameData->fieldOriginY), data->termX, data->termY);
     }
 
     /* Checking to make sure terminal dimensions are valid */
-    if(!data_validTerm()) {
+    if(!data_validTerm(*data)) {
         gameData->gameState = GAME_INVALID;
         gameData->screenClear = 1;
     }
@@ -151,10 +147,9 @@ void game_update(programData_t * data, gameData_t * gameData) {
         break;
 
         case GAME_RESTART:
-            game_reset(gameData, data->userData.alignment);
+            game_reset(gameData, data->userData.alignment, data->termX, data->termY);
         break;
     }
-
 }
 
 void game_updateRun(programData_t * data, gameData_t * gameData) {
@@ -166,6 +161,7 @@ void game_updateRun(programData_t * data, gameData_t * gameData) {
 
     if(gameData->keyIn) {
 
+        /* Moving block in correct direction based on pressed arrow key */
         short moved = 0;
         if(gameData->keys.KEY_ARROW_UP) {
             game_rotateBlock(&gameData->block, gameData->field);
@@ -177,6 +173,7 @@ void game_updateRun(programData_t * data, gameData_t * gameData) {
             game_moveBlock(&gameData->block, -1, 0, gameData->field, 0);
             moved = 1;
         } else if(gameData->keys.KEY_ARROW_DOWN) {
+            /* Dropping block down by 1 if not too early */
             if(gameData->dropTimer <= 0) {
                 dropped = game_moveBlock(&gameData->block, 0, 1, gameData->field, 0);
                 moved = 1;
@@ -186,6 +183,7 @@ void game_updateRun(programData_t * data, gameData_t * gameData) {
             }
         }
 
+        /* Updating place timer if block on ground but not placed */
         if(moved && !gameData->falling && gameData->placeTimer > 0)
             gameData->placeTimer += 0.5f * data->deltaTime;
         
@@ -198,7 +196,7 @@ void game_updateRun(programData_t * data, gameData_t * gameData) {
 
     /* --- Gameplay Logic --- */
 
-    /* Check whether the block is in falling state or being placed state */
+    /* Check whether the block is in falling state or being placed state (and not being dropped down) */
     if(gameData->falling && !dropped) {
         /* Decrement fall timer and proceed with fall */
         if(gameData->fallTimer > 0) {
@@ -225,11 +223,11 @@ void game_updateRun(programData_t * data, gameData_t * gameData) {
 
     /* Clearing lines and adding score */
     int lineClears = 0;
-    for(int y = (FIELD_Y-1); y >= 0; y--) {
+    for(int y = (FIELD_Y-1); y >= 0; --y) {
 
         /* Checking whether row cleared */
         int rowCleared = 1;
-        for(int x = 0; x < FIELD_X; x++) {
+        for(int x = 0; x < FIELD_X; ++x) {
             if(gameData->field[x][y] <= 0) {
                 rowCleared = 0;
                 break;
@@ -238,7 +236,7 @@ void game_updateRun(programData_t * data, gameData_t * gameData) {
 
         /* Moving processed line downwards by the number of lines cleared previously */
         if(lineClears > 0) {
-            for(int x = 0; x < FIELD_X; x++) {
+            for(int x = 0; x < FIELD_X; ++x) {
                 if(y+lineClears < FIELD_Y) {
                     gameData->field[x][y+lineClears] = gameData->field[x][y];
                     gameData->field[x][y] = 0;
@@ -311,6 +309,7 @@ void game_updateOver(programData_t * data, gameData_t * gameData) {
 
 void game_updateInvalid(programData_t * data, gameData_t * gameData) {
 
+    /* Check if exit requested by keyboard */
     if(gameData->keyIn) {
         if(gameData->keys.KEY_Q) {
             gameData->nextTask = TASK_EXIT;
@@ -318,7 +317,11 @@ void game_updateInvalid(programData_t * data, gameData_t * gameData) {
         }
     }
 
-    if(data_validTerm()) {
+    /* Updating terminal info */
+    data_termSize(data);
+
+    /* Checking if terminal changed to valid size */
+    if(data_validTerm(*data)) {
         gameData->gameState = GAME_PAUSED;
         gameData->screenClear = 1;
     }
@@ -370,21 +373,21 @@ void game_render(programData_t data, gameData_t gameData) {
     /* Print top of the border */
     modeSet(NO_CODE, COLOR_WHITE, COLOR_CYAN);
     cursorMoveTo(1, 1);
-    for(int x = 0; x < gameData.termX; ++x) {
+    for(int x = 0; x < data.termX; ++x) {
         putchar('#');
     }
 
     /* Printing sides of the border */
-    for(int y = 0; y < gameData.termY; ++y) {
+    for(int y = 0; y < data.termY; ++y) {
         cursorMoveTo(1, y);
         putchar('#');
-        cursorMoveTo(gameData.termX, y);
+        cursorMoveTo(data.termX, y);
         putchar('#');
     }
 
     /* Print bottom of the border */
-    cursorMoveTo(1, gameData.termY);
-    for(int x = 0; x < gameData.termX; ++x) {
+    cursorMoveTo(1, data.termY);
+    for(int x = 0; x < data.termX; ++x) {
         putchar('#');
     }
 
@@ -415,11 +418,11 @@ void game_renderRun(programData_t data, gameData_t gameData) {
     putchar('\n');
     
     /* Drawing field */
-    for(short y = 0; y < FIELD_Y; y++) {
+    for(short y = 0; y < FIELD_Y; ++y) {
         cursorMoveBy(RIGHT, originXOffset);
         modeSet(NO_CODE, COLOR_WHITE, COLOR_BLACK);
         putchar('|');
-        for(short x = 0; x < FIELD_X; x++) {
+        for(short x = 0; x < FIELD_X; ++x) {
             if(gameData.field[x][y] > 0) {
                 modeSet(NO_CODE, COLOR_BLACK, gameData.field[x][y]);
                 fputs("[]", stdout);
@@ -450,14 +453,14 @@ void game_renderRun(programData_t data, gameData_t gameData) {
 void game_renderPaused(programData_t data, gameData_t gameData) {
 
     /* Rendering pause menu somewhere approx in the field */    
-    int posX = util_center(gameData.pauseMenu.realWidth, gameData.termX);
+    int posX = util_center(gameData.pauseMenu.realWidth, data.termX);
     gui_render(gameData.pauseMenu, posX, 6, 1);
 }
 
 void game_renderOver(programData_t data, gameData_t gameData) {
     
     /* Rendering game over dialog */
-    int posX = util_center(gameData.overMenu.realWidth, gameData.termX);
+    int posX = util_center(gameData.overMenu.realWidth, data.termX);
     gui_render(gameData.overMenu, posX, 6, 1);
     cursorMoveTo(posX+17, 9);
     modeSet(STYLE_BOLD, COLOR_WHITE, gameData.overMenu.background);
@@ -469,7 +472,7 @@ void game_renderInvalid(programData_t data, gameData_t gameData) {
     /* Rendering error dialog */
     modeSet(STYLE_BOLD, COLOR_WHITE, COLOR_RED);
     cursorMoveTo(2, 2);
-    printf("The current Terminal size (%dx%d) is invalid (minimum %dx%d).\n", gameData.termX, gameData.termY, TERM_MIN_X, TERM_MIN_Y);
+    printf("The current Terminal size (%dx%d) is invalid (minimum %dx%d).\n", data.termX, data.termY, TERM_MIN_X, TERM_MIN_Y);
     puts("Resize the terminal to continue the game, or exit using 'q'");
 }
 
@@ -479,7 +482,7 @@ short game_moveBlock(block_t * block, int x, int y, char field [FIELD_X][FIELD_Y
     int newTiles [4][2];
 
     /* Populating the array of new tiles and checking for collisions */
-    for(short i = 0; i < 4; i++) {
+    for(short i = 0; i < 4; ++i) {
         /* Moving i-th new tile */
         newTiles[i][0] = block->tiles[i][0]; 
         newTiles[i][1] = block->tiles[i][1];
@@ -493,7 +496,7 @@ short game_moveBlock(block_t * block, int x, int y, char field [FIELD_X][FIELD_Y
     /* If this point in code reached, no collisions detected, which means the block doesn't collide */
     /* Overwriting the old tiles array with the newly created newTiles array (if desired) */
     if(!dryRun) {
-        for(short i = 0; i < 4; i++) {
+        for(short i = 0; i < 4; ++i) {
             block->tiles[i][0] = newTiles[i][0];
             block->tiles[i][1] = newTiles[i][1];
         }
@@ -509,7 +512,7 @@ short game_rotateBlock(block_t * block, char field [FIELD_X][FIELD_Y]) {
     newTiles[0][0] = block->tiles[0][0];
     newTiles[0][1] = block->tiles[0][1];
 
-    for(short i = 1; i < 4; i++) {
+    for(short i = 1; i < 4; ++i) {
         /* Rotating i-th non-origin tile */
         newTiles[i][0] = block->tiles[i][0];
         newTiles[i][1] = block->tiles[i][1];
@@ -521,7 +524,7 @@ short game_rotateBlock(block_t * block, char field [FIELD_X][FIELD_Y]) {
     }
 
     /* If this point reached, no collisions detected, so the old tiles array is overwritten by the new array */
-    for(short i = 1; i < 4; i++) {
+    for(short i = 1; i < 4; ++i) {
         block->tiles[i][0] = newTiles[i][0];
         block->tiles[i][1] = newTiles[i][1];
     }
@@ -543,7 +546,7 @@ void _game_genBlock(gameData_t * data, int startX, int startY) {
 
 short _game_placeBlock(gameData_t * data) {
     short result = 1;
-    for(short i = 0; i < 4; i++) {
+    for(short i = 0; i < 4; ++i) {
         int blockX = data->block.tiles[i][0];
         int blockY = data->block.tiles[i][1];
         if((blockX >= 0 && blockX < FIELD_X) && (blockY >= 0 && blockY < FIELD_Y) && (data->field[blockX][blockY] < 1))
@@ -586,7 +589,7 @@ void _game_getAlignPos(fieldAlign_t alignment, int * posX, int * posY, int termi
 
         case ALIGN_BOTTOM:
             *posY = terminalHeight - (FIELD_Y+2) - 3;
-            break;
+        break;
         
         default:
             *posY = 3;

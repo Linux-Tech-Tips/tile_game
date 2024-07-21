@@ -14,27 +14,33 @@ void keys_processBuffer(char * keyBuffer, size_t numKeys, keys_t * keys) {
             case 'q':
             case 'Q':
                 keys->KEY_Q = 1;
-                break;
+            break;
+
             case 'w':
             case 'W':
                 keys->KEY_W = 1;
-                break;
+            break;
+
             case 'e':
             case 'E':
                 keys->KEY_E = 1;
-                break;
+            break;
+
             case 'r':
             case 'R':
                 keys->KEY_R = 1;
-                break;
+            break;
+
             case 't':
             case 'T':
                 keys->KEY_T = 1;
-                break;
+            break;
+
             case 'y':
             case 'Y':
                 keys->KEY_Y = 1;
-                break;
+            break;
+
             case 'u':
             case 'U':
                 keys->KEY_U = 1;
@@ -42,83 +48,102 @@ void keys_processBuffer(char * keyBuffer, size_t numKeys, keys_t * keys) {
             case 'i':
             case 'I':
                 keys->KEY_I = 1;
-                break;
+            break;
+
             case 'o':
             case 'O':
                 keys->KEY_O = 1;
-                break;
+            break;
+
             case 'p':
             case 'P':
                 keys->KEY_P = 1;
-                break;
+            break;
+
 
             /* Chars 2 */
             case 'a':
             case 'A':
                 keys->KEY_A = 1;
-                break;
+            break;
+
             case 's':
             case 'S':
                 keys->KEY_S = 1;
-                break;
+            break;
+
             case 'd':
             case 'D':
                 keys->KEY_D = 1;
-                break;
+            break;
+
             case 'f':
             case 'F':
                 keys->KEY_F = 1;
-                break;
+            break;
+
             case 'g':
             case 'G':
                 keys->KEY_G = 1;
-                break;
+            break;
+
             case 'h':
             case 'H':
                 keys->KEY_H = 1;
-                break;
+            break;
+
             case 'j':
             case 'J':
                 keys->KEY_J = 1;
-                break;
+            break;
+
             case 'k':
             case 'K':
                 keys->KEY_K = 1;
-                break;
+            break;
+
             case 'l':
             case 'L':
                 keys->KEY_L = 1;
-                break;
+            break;
+
 
             /* Chars 3 */
             case 'z':
             case 'Z':
                 keys->KEY_L = 1;
-                break;
+            break;
+
             case 'x':
             case 'X':
                 keys->KEY_L = 1;
-                break;
+            break;
+
             case 'c':
             case 'C':
                 keys->KEY_L = 1;
-                break;
+            break;
+
             case 'v':
             case 'V':
                 keys->KEY_L = 1;
-                break;
+            break;
+
             case 'b':
             case 'B':
                 keys->KEY_L = 1;
-                break;
+            break;
+
             case 'n':
             case 'N':
                 keys->KEY_L = 1;
-                break;
+            break;
+
             case 'm':
             case 'M':
                 keys->KEY_L = 1;
-                break;
+            break;
+
 
             /* Escape-based keys */
             case (char)(27):
@@ -131,21 +156,26 @@ void keys_processBuffer(char * keyBuffer, size_t numKeys, keys_t * keys) {
                             case 65:
                                 keys->KEY_ARROW_UP = 1;
                                 ++idx;
-                                break;
+                            break;
+                            
                             case 66:
                                 keys->KEY_ARROW_DOWN = 1;
                                 ++idx;
-                                break;
+                            break;
+                            
                             case 67:
                                 keys->KEY_ARROW_RIGHT = 1;
                                 ++idx;
-                                break;
+                            break;
+                            
                             case 68:
                                 keys->KEY_ARROW_LEFT = 1;
                                 ++idx;
-                                break;
+                            break;
+                            
                             default:
-                                break;
+                                /* starts with the correct sequence but not an arrow key */
+                            break;
                         }
                     }
                 /* 79 'O' is the character following ESC for some F keys (locally F1-F4), capturing to not trigger ESC */
@@ -163,16 +193,19 @@ void keys_processBuffer(char * keyBuffer, size_t numKeys, keys_t * keys) {
                     */
                     keys->KEY_ESC = 1;
                 }
-                break;
+            break;
+
             case (char)(10):
                 keys->KEY_ENTER = 1;
-                break;
+            break;
+
             case (char)(9):
                 keys->KEY_TAB = 1;
-                break;
+            break;
             
             default:
-                break;
+                /* don't set any keys */
+            break;
         }
     }
 }

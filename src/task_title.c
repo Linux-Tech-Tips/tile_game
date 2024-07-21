@@ -38,10 +38,6 @@ void title_init(titleData_t * data) {
     data->validTerminal = 1;
     /* Force screen reload when screen started */
     data->screenClear = 1;
-
-    /* Initializing terminal information */
-    getTerminalSize(&data->termX, &data->termY);
-    data->terminalResized = 0;
     
     /* GUI creation */
     gui_createDialog_opt(&data->menu, "", NO_CODE, NO_CODE, 
@@ -54,19 +50,27 @@ void title_init(titleData_t * data) {
 }
 
 void title_destroy(titleData_t * data) {
+    /* Disposing of GUI dialog */
     gui_destroyDialog(&data->menu);
 }
 
 void title_update(programData_t * data, titleData_t * titleData) {
     
+    /* Updating terminal info */
+    data_termSize(data);
+
     /* Validating terminal size */
-    titleData->validTerminal = data_validTerm();
+    titleData->validTerminal = data_validTerm(*data);
 
     /* Skipping the rest of update if the terminal is invalid - logic not needed */
     if(!titleData->validTerminal) {
         titleData->screenClear = 1;
         return;
     }
+
+    /* Requesting to clear screen on terminal resize */
+    if(data->termResized)
+        titleData->screenClear = 1;
 
     /* Reading and processing keyboard input */
     char readBuffer [TASK_TITLE_KEYS] = {0};
@@ -99,18 +103,6 @@ void title_update(programData_t * data, titleData_t * titleData) {
             titleData->titleRun = 0;
         }
     }
-
-    /* Process terminal size */
-    int newX = 0, newY = 0;
-    getTerminalSize(&newX, &newY);
-    if(newX != titleData->termX || newY != titleData->termY) {
-        titleData->terminalResized = 1;
-        titleData->screenClear = 1;
-        titleData->termX = newX;
-        titleData->termY = newY;
-    } else if(titleData->terminalResized) {
-        titleData->terminalResized = 0;
-    }
 }
 
 void title_render(programData_t data, titleData_t titleData) {
@@ -142,9 +134,9 @@ void title_render(programData_t data, titleData_t titleData) {
     cursorMoveTo(0, posY);
     modeSet(STYLE_BOLD, COLOR_CYAN, NO_CODE);
     /* Choosing title style based on available terminal width */
-    if(titleData.termX < 80) {
+    if(data.termX < 80) {
         /* Thinner title text */
-        int posX = util_center(38, titleData.termX);
+        int posX = util_center(38, data.termX);
         cursorMoveTo(posX, posY++);
         puts("  _|_|_|_|_|  _|  _|      _|_|_|      ");
         cursorMoveTo(posX, posY++);
@@ -170,7 +162,7 @@ void title_render(programData_t data, titleData_t titleData) {
 
     } else {
         /* Wider title text */
-        int posX = util_center(74, titleData.termX);
+        int posX = util_center(74, data.termX);
         cursorMoveTo(posX, posY++);
         puts(" _|_|_|_|_|  _|_|_|  _|_|    _|      _|  _|  _|      _|    _|_|    _|    ");
         cursorMoveTo(posX, posY++);
@@ -197,28 +189,28 @@ void title_render(programData_t data, titleData_t titleData) {
     }
 
     /* Print GUI under */
-    int guiX = util_center(titleData.menu.realWidth, titleData.termX);
+    int guiX = util_center(titleData.menu.realWidth, data.termX);
     gui_render(titleData.menu, guiX, posY, 1);
 
 
     /* Print top of the border */
     modeSet(NO_CODE, COLOR_WHITE, COLOR_CYAN);
     cursorMoveTo(1, 1);
-    for(int x = 0; x < titleData.termX; ++x) {
+    for(int x = 0; x < data.termX; ++x) {
         putchar('#');
     }
 
     /* Printing sides of the border */
-    for(int y = 0; y < titleData.termY; ++y) {
+    for(int y = 0; y < data.termY; ++y) {
         cursorMoveTo(1, y);
         putchar('#');
-        cursorMoveTo(titleData.termX, y);
+        cursorMoveTo(data.termX, y);
         putchar('#');
     }
 
     /* Print bottom of the border */
-    cursorMoveTo(1, titleData.termY);
-    for(int x = 0; x < titleData.termX; ++x) {
+    cursorMoveTo(1, data.termY);
+    for(int x = 0; x < data.termX; ++x) {
         putchar('#');
     }
 

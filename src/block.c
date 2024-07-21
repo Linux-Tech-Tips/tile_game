@@ -1,11 +1,11 @@
 #include "block.h"
 
-void block_moveTile(int tile [TILE_XY], int x, int y) {
+void block_moveTile(int tile [TILE_COORDS], int x, int y) {
     tile[TILE_X] += x;
     tile[TILE_Y] += y;
 }
 
-void block_rotateTile(int tile [TILE_XY], int originX, int originY) {
+void block_rotateTile(int tile [TILE_COORDS], int originX, int originY) {
     /* Saving the old x and y coordinates into local variables */
     int x = tile[TILE_X], y = tile[TILE_Y];
     /* Rotating using solutions to the matrix equation '(x, y) = ((0, 1), (-1, 0))(x-oX, y-oY) + (oX, oY)' 
@@ -21,34 +21,34 @@ void block_gen(block_t * block, blockType_t type, int startX, int startY) {
     switch(type) {
         case BLOCK_T:
             _block_genTiles(block, 0, 0, -1, 0, 1, 0, 0, 1);
-            break;
+        break;
         
         case BLOCK_CUBE:
             _block_genTiles(block, 0, 0, 1, 0, 0, 1, 1, 1);
-            break;
+        break;
 
         case BLOCK_LINE:
             _block_genTiles(block, 0, 0, -1, 0, 1, 0, 2, 0);
-            break;
+        break;
 
         case BLOCK_L:
             _block_genTiles(block, 0, 0, -1, 0, 1, 0, 1, 1);
-            break;
+        break;
 
         case BLOCK_L_R:
             _block_genTiles(block, 0, 0, 1, 0, -1, 0, -1, 1);
-            break;
+        break;
 
         case BLOCK_Z:
             _block_genTiles(block, 0, 0, 1, 0, 0, 1, -1, 1);
-            break;
+        break;
 
         case BLOCK_Z_R:
             _block_genTiles(block, 0, 0, -1, 0, 0, 1, 1, 1);
-            break;
+        break;
     }
 
-    for(short i = 0; i < BLOCK_SIZE; i++)
+    for(short i = 0; i < BLOCK_SIZE; ++i)
         block_moveTile(block->tiles[i], startX, startY);
 }
 
@@ -107,7 +107,7 @@ blockType_t block_getNext(bag_t * bag) {
 
 void block_shuffleBag(bag_t * bag) {
     /* Shuffling the bag from largest array index to the second index */
-    for(int i = ((BLOCK_TYPE_NUM * BLOCK_BAG_SIZE) - 1); i > 0; i--) {
+    for(int i = ((BLOCK_TYPE_NUM * BLOCK_BAG_SIZE) - 1); i > 0; --i) {
         /* Generating random element from the left-hand side of the array to swap the current element with */
         int j = rand() % (i+1);
         /* Swapping elements */
@@ -123,11 +123,11 @@ void block_shuffleBag(bag_t * bag) {
 
 void block_initBag(bag_t * bag) {
     /* Initializing the block array which will be shuffled */
-    for(int i = 0; i < BLOCK_TYPE_NUM; i++) {
+    for(int i = 0; i < BLOCK_TYPE_NUM; ++i) {
         /* Creating the next tile based on the iteration number */
         blockType_t b = BLOCK_TYPE_MIN + i;
         /* Writing the block type into all the expected array positions */
-        for(int j = 0; j < BLOCK_BAG_SIZE; j++)
+        for(int j = 0; j < BLOCK_BAG_SIZE; ++j)
             bag->shuffle[i+(j*BLOCK_TYPE_NUM)] = b;
     }
     /* Initializing next index to 0 */
