@@ -51,6 +51,7 @@ void data_reset(programData_t * data) {
 
 void data_init(programData_t * data) {
     data->run = 1;
+    data->exitCode = 0;
     clock_gettime(CLOCK_MONOTONIC, &(data->prevTime));
     data->deltaTime = 0;
     getTerminalSize(&data->termX, &data->termY);

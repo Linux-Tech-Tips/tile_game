@@ -62,6 +62,9 @@ typedef struct {
     /** Whether the program is running (1) or should terminate (0) */
     short run;
 
+    /** The exit code the program should return */
+    int exitCode;
+
     /** The saved user data */
     userData_t userData;
 

@@ -18,20 +18,16 @@
  * Initialized to a NULL pointer, optimally to be set to the address of a variable used in the program.
 */
 static short * signalRun = NULL;
+/** The global static variable used to transfer the specific signal the handler captures. 
+ * Initialized to a NULL pointer, to be set to an address of a program variable.
+*/
+static short * signalNum = NULL;
 
 /** Function to handle received SIGINT signal to allow for graceful program termination */
 void signalHandler(int sigID);
 
 /* Main function */
 int main(int argc, char * argv []) {
-
-    /* Minimum terminal size check */
-    int x = -1, y = -1;
-    getTerminalSize(&x, &y);
-    if(x < TERM_MIN_X || y < TERM_MIN_Y) {
-        fprintf(stderr, "Unsupported Terminal Size: %dx%d (minimum 48x24 required)\n", x, y);
-        return 1;
-    }
 
     /* Attaching a signal handler for a graceful exit on receiving SIGINT */
     struct sigaction signalControl = {0};
@@ -46,6 +42,13 @@ int main(int argc, char * argv []) {
     data_load(&data, SAVE_FILE_NAME);
     /* Attaching the data.run program data variable to the static global signal processing variable */
     signalRun = &(data.run);
+    signalNum = &(data.exitCode);
+
+    /* Minimum terminal size check */
+    if(!data_validTerm()) {
+        fprintf(stderr, "Unsupported Terminal Size: %dx%d (minimum 48x24 required)\n", data.termX, data.termY);
+        return 1;
+    }
 
     /* Terminal GUI initialization */
     screenSave();
@@ -75,6 +78,7 @@ int main(int argc, char * argv []) {
             /* Graceful exit program procedure */
             case TASK_EXIT:
                 data.run = 0;
+                data.exitCode = 0;
             break;
 
             /* Default behavior (if no correct nextTask set) - exit program gracefully */
@@ -92,7 +96,7 @@ int main(int argc, char * argv []) {
     data_save(data, SAVE_FILE_NAME);
 
     /* Returning successful exit to shell */
-    return 0;
+    return data.exitCode;
 }
 
 
@@ -102,6 +106,10 @@ void signalHandler(int sigID) {
     if(signalRun != NULL) {
         /* Setting the attached run variable to 0 to terminate program gracefully */
         *signalRun = 0;
+        /* Saving the captured signal ID if address set */
+        if(signalNum != NULL) {
+            *signalNum = sigID;
+        }
     } else {
         /* Hard exit if no signal handling run variable attached (pointer is NULL) */
         exit(1);
