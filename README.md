@@ -21,8 +21,7 @@ To try out the demo, clone the repository on a Linux machine with *gcc* and *mak
 ## Development Roadmap
 
 **Features**:
-- Code refactoring
-- Command line option to disable color mode for colorless terminals
+- Code refactoring (consistency, readability)
 
 **Fixes**:
 - Fix all warnings once release-applicable version done
