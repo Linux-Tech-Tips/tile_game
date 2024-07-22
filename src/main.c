@@ -21,13 +21,13 @@ static short * signalRun = NULL;
 /** The global static variable used to transfer the specific signal the handler captures. 
  * Initialized to a NULL pointer, to be set to an address of a program variable.
 */
-static short * signalNum = NULL;
+static int * signalNum = NULL;
 
 /** Function to handle received SIGINT signal to allow for graceful program termination */
 void signalHandler(int sigID);
 
 /* Main function */
-int main(int argc, char * argv []) {
+int main(void) {
 
     /* Attaching a signal handler for a graceful exit on receiving SIGINT */
     struct sigaction signalControl = {0};

@@ -112,4 +112,6 @@ short data_termSize(programData_t * data) {
     } else {
         data->termResized = 0;
     }
+    /* Return terminal state */
+    return data->termResized;
 }

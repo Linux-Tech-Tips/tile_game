@@ -81,7 +81,6 @@ void options_init(optionsData_t * data, programData_t programData) {
     /* Setting buttons to correct states based on program data */
     options_refreshButtons(&programData, data, 0);
 
-    getTerminalSize(&data->termX, &data->termY);
     data->screenClear = 1;
 }
 
@@ -240,7 +239,7 @@ void options_render(programData_t data, optionsData_t optData) {
     /* Render reset confirm dialog and skipping the rest if desired */
     if(optData.resetConfirmActive) {
         /* Render reset confirm dialog */
-        int posX = util_center(optData.resetConfirm.realWidth, optData.termX);
+        int posX = util_center(optData.resetConfirm.realWidth, data.termX);
         gui_render(optData.resetConfirm, posX, 6, 1);
 
     } else {
@@ -249,13 +248,13 @@ void options_render(programData_t data, optionsData_t optData) {
         for(int i = 0; i < OPTIONS_NUM_DIALOGS; ++i) {
             /* Render dialog to the center of screen */
             gui_dialog_t dialog = optData.dialogs[i];
-            int posX = util_center(dialog.realWidth, optData.termX);
-            gui_render(dialog, posX, posY, (optData.activeDialog == i));
+            int posX = util_center(dialog.realWidth, data.termX);
+            gui_render(dialog, posX, posY, (optData.activeDialog == (options_dialogType_t)(i)));
 
             /* Drawing selected marker to desired buttons */
             if(i < DIALOG_DATA_RESET) {
                 cursorMoveTo(posX+3 + (13 * dialog.currentButton), posY+2);
-                modeSet(STYLE_BOLD, COLOR_WHITE, (optData.activeDialog == i ? COLOR_BLUE : COLOR_CYAN));
+                modeSet(STYLE_BOLD, COLOR_WHITE, (optData.activeDialog == (options_dialogType_t)(i) ? COLOR_BLUE : COLOR_CYAN));
                 putchar('*');
             }
 
@@ -267,21 +266,21 @@ void options_render(programData_t data, optionsData_t optData) {
     /* Print top of the border */
     modeSet(NO_CODE, COLOR_WHITE, COLOR_CYAN);
     cursorMoveTo(1, 1);
-    for(int x = 0; x < optData.termX; ++x) {
+    for(int x = 0; x < data.termX; ++x) {
         putchar('#');
     }
 
     /* Printing sides of the border */
-    for(int y = 0; y < optData.termY; ++y) {
+    for(int y = 0; y < data.termY; ++y) {
         cursorMoveTo(1, y);
         putchar('#');
-        cursorMoveTo(optData.termX, y);
+        cursorMoveTo(data.termX, y);
         putchar('#');
     }
 
     /* Print bottom of the border */
-    cursorMoveTo(1, optData.termY);
-    for(int x = 0; x < optData.termX; ++x) {
+    cursorMoveTo(1, data.termY);
+    for(int x = 0; x < data.termX; ++x) {
         putchar('#');
     }
 
@@ -333,6 +332,9 @@ void options_refreshButtons(programData_t * data, optionsData_t * optData, short
             case ALIGN_RIGHT:
                 optData->dialogs[DIALOG_ALIGN_MENU_X].currentButton = optData->alignMenuXRight;
             break;
+            default:
+                optData->dialogs[DIALOG_ALIGN_MENU_X].currentButton = -1;
+            break;
         }
 
         /* DIALOG_ALIGN_MENU_Y */
@@ -345,6 +347,9 @@ void options_refreshButtons(programData_t * data, optionsData_t * optData, short
             break;
             case ALIGN_BOTTOM:
                 optData->dialogs[DIALOG_ALIGN_MENU_Y].currentButton = optData->alignMenuYBottom;
+            break;
+            default:
+                optData->dialogs[DIALOG_ALIGN_MENU_Y].currentButton = -1;
             break;
         }
 

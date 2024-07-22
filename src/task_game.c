@@ -135,11 +135,11 @@ void game_update(programData_t * data, gameData_t * gameData) {
         break;
 
         case GAME_PAUSED:
-            game_updatePaused(data, gameData);
+            game_updatePaused(gameData);
         break;
 
         case GAME_OVER:
-            game_updateOver(data, gameData);
+            game_updateOver(gameData);
         break;
 
         case GAME_INVALID:
@@ -263,7 +263,7 @@ void game_updateRun(programData_t * data, gameData_t * gameData) {
         gameData->dropTimer -= data->deltaTime;
 }
 
-void game_updatePaused(programData_t * data, gameData_t * gameData) {
+void game_updatePaused(gameData_t * gameData) {
     
     if(gameData->keyIn) {
         
@@ -288,7 +288,7 @@ void game_updatePaused(programData_t * data, gameData_t * gameData) {
 
 }
 
-void game_updateOver(programData_t * data, gameData_t * gameData) {
+void game_updateOver(gameData_t * gameData) {
     if(gameData->keyIn) {
 
         int button = gui_update(&gameData->overMenu, gameData->keys);
@@ -354,7 +354,7 @@ void game_render(programData_t data, gameData_t gameData) {
     /* Drawing stuff specific to current state */
     switch(gameData.gameState) {
         case GAME_RUN:
-            game_renderRun(data, gameData);
+            game_renderRun(gameData);
         break;
 
         case GAME_PAUSED:
@@ -366,7 +366,11 @@ void game_render(programData_t data, gameData_t gameData) {
         break;
 
         case GAME_INVALID:
-            game_renderInvalid(data, gameData);
+            game_renderInvalid(data);
+        break;
+
+        default:
+            /* For other cases, do nothing extra */
         break;
     }
 
@@ -397,7 +401,7 @@ void game_render(programData_t data, gameData_t gameData) {
     fflush(stdout);
 }
 
-void game_renderRun(programData_t data, gameData_t gameData) {
+void game_renderRun(gameData_t gameData) {
     /* NOTE: Playing field draw calls are specific to the RUN state to not interfere with the GUI */
 
     /* Getting field origin offset instead of actual position, since cursorMoveBy is used */
@@ -467,7 +471,7 @@ void game_renderOver(programData_t data, gameData_t gameData) {
     printf("%6d", gameData.score);
 }
 
-void game_renderInvalid(programData_t data, gameData_t gameData) {
+void game_renderInvalid(programData_t data) {
 
     /* Rendering error dialog */
     modeSet(STYLE_BOLD, COLOR_WHITE, COLOR_RED);

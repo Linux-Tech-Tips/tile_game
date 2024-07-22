@@ -84,10 +84,6 @@ typedef struct {
     /** Whether the floating confirm dialog is actively displayed or not */
     short resetConfirmActive;
 
-    /** The current terminal width */
-    int termX;
-    /** The current terminal height */
-    int termY;
     /** Whether the current terminal is valid */
     short validTerminal;
     /** When this is set, clear the screen in the next frame */

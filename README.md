@@ -14,11 +14,6 @@ within a Linux terminal, using only the standard library. In practice, this itse
 As someone who has worked with the Ncurses library in the past, one day, I thought to myself, "This is fun, but what if I did *all* of it myself??" 
 which is where the idea for this style of program comes from.
 
-The game is still work in progress, and while a working demo is available, everything is still subject to change.
+The game is still under development, and might very well change in the future, if I feel like it.
 
-To try out the demo, clone the repository on a Linux machine with *gcc* and *make* installed, download the 'terminal_gui' submodule using `git submodule init` and `git submodule update` and execute `make run` in a sufficiently large (>=48x24) terminal.
-
-## Development Roadmap
-
-**Fixes**:
-- Fix all warnings once release-applicable version done
+To try out the existing version, clone the repository (or download a release, if there's any) on a Linux machine with *gcc* and *make* installed, download the 'terminal_gui' submodule using `git submodule init` and `git submodule update` and execute `make run` in a sufficiently large (>=48x28) terminal. Enjoy!

@@ -163,10 +163,10 @@ void game_update(programData_t * data, gameData_t * gameData);
 void game_updateRun(programData_t * data, gameData_t * gameData);
 
 /** Update function containing the GAME_PAUSED state logic */
-void game_updatePaused(programData_t * data, gameData_t * gameData);
+void game_updatePaused(gameData_t * gameData);
 
 /** Update function containing the GAME_OVER state logic */
-void game_updateOver(programData_t * data, gameData_t * gameData);
+void game_updateOver(gameData_t * gameData);
 
 /** Update function containing the GAME_INVALID state logic, for invalid terminal size (or general error state) */
 void game_updateInvalid(programData_t * data, gameData_t * gameData);
@@ -178,7 +178,7 @@ void game_updateInvalid(programData_t * data, gameData_t * gameData);
 void game_render(programData_t data, gameData_t gameData);
 
 /** Render function containing specific separate GAME_RUN state draw calls */
-void game_renderRun(programData_t data, gameData_t gameData);
+void game_renderRun(gameData_t gameData);
 
 /** Render function containing specific separate GAME_PAUSED state draw calls */
 void game_renderPaused(programData_t data, gameData_t gameData);
@@ -187,7 +187,7 @@ void game_renderPaused(programData_t data, gameData_t gameData);
 void game_renderOver(programData_t data, gameData_t gameData);
 
 /** Render function containing GAME_INVALID state draw calls, for invalid terminal size */
-void game_renderInvalid(programData_t data, gameData_t gameData);
+void game_renderInvalid(programData_t data);
 
 
 /* --- Other Functions --- */
